@@ -1,35 +1,118 @@
 import { User } from "../models/user.model.js";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import type { Request, Response } from "express";
 
+export interface IUserPayload {
+    _id: string;
+    name?: string;
+    email?: string;
+    role?: string;
+    mode?: string;
+}
 
-export const userSignup = async (req: Request,res: Response)=>{
+export interface RequestWithUser extends Request {
+    user?: IUserPayload;
+}
+
+export const userSignup = async (req: Request, res: Response) => {
     try {
-        const { name,email,password} = req.body;
-        if(!name || !email || !password){
-            return res.status(400).json({success: false , message: "all fields are required"});
+        const { name, email, password, role, mode } = req.body;
+        if (!name || !email || !password) {
+            return res.status(400).json({ success: false, message: "All fields are required" });
         }
 
-        const exisitingUser=await User.findOne({email});
-        if(exisitingUser){
-            return res.status(401).json({success: false, message: "already registered with this email"});
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(401).json({ success: false, message: "Already registered with this email" });
         }
 
         const user = await User.create({
             name,
+            email,
             password,
-            email
+            role, 
+            mode,
         });
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, {
-            expiresIn: "7d"
+        const token = jwt.sign({ id: user._id,role: user.role }, process.env.JWT_SECRET!, { expiresIn: "7d" });
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            sameSite: "strict",
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
-        res.status(201).json({ success: true, message: "Signup successful", user });
+        return res.status(201).json({ success: true, message: "Signup successful", user });
     } catch (error) {
-        console.log("Error occuring while signup a user",error);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+        console.error("Signup error:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
-}
+};
 
+export const userLogin = async (req: Request, res: Response) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ success: false, message: "All fields are required" });
+        }
 
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ success: false, message: "User not found" });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: "Invalid password" });
+        }
+
+        const token = jwt.sign({ id: user._id,role: user.role }, process.env.JWT_SECRET!, { expiresIn: "7d" });
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            sameSite: "strict",
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
+        return res.status(200).json({ success: true, message: "Login successful" });
+    } catch (error) {
+        console.error("Login error:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+export const userLogout = async (req: Request, res: Response) => {
+    try {
+        res.clearCookie("token", {
+            httpOnly: true,
+            sameSite: "strict",
+            secure: process.env.NODE_ENV === "production",
+        });
+        
+        return res.status(200).json({ success: true, message: "Logged out successfully" });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Logout failed", error });
+    }
+};
+
+export const getProfile = async (req: RequestWithUser, res: Response) => {
+    try {
+        const userId = req.user?._id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
+        const profile = await User.findById(userId).select("-password");
+        if (!profile) {
+            return res.status(404).json({ success: false, message: "Profile not found" });
+        }
+
+        res.status(200).json({ success: true, profile });
+    } catch (error) {
+        console.error("Error fetching profile:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
