@@ -9,7 +9,7 @@ const userSchema = new Schema({
     password: { type: String, required: true},
     institutionName: { type: String, default: null},
     role: { type: String, enum: ['student','teacher'], default: 'student', required: true },
-    mode: { type: String, enum: ["college", "individual"], required: true }
+    mode: { type: String, enum: ["college", "individual"] }
 },{timestamps: true});
 
 userSchema.pre('save',async function(next){

@@ -8,7 +8,6 @@ export interface IUserPayload {
     name?: string;
     email?: string;
     role?: string;
-    mode?: string;
 }
 
 export interface RequestWithUser extends Request {
@@ -17,7 +16,7 @@ export interface RequestWithUser extends Request {
 
 export const userSignup = async (req: Request, res: Response) => {
     try {
-        const { name, email, password, role, mode } = req.body;
+        const { name, email, password, role } = req.body;
         if (!name || !email || !password) {
             return res.status(400).json({ success: false, message: "All fields are required" });
         }
@@ -31,8 +30,7 @@ export const userSignup = async (req: Request, res: Response) => {
             name,
             email,
             password,
-            role, 
-            mode,
+            role
         });
 
         const token = jwt.sign({ id: user._id,role: user.role }, process.env.JWT_SECRET!, { expiresIn: "7d" });
