@@ -15,7 +15,7 @@ export const fetchTestSeries = async(req:RequestWithUser, res: Response)=>{
             return res.status(403).json({ success: false,message: "Access denied." });
         }
 
-        res.status(200).json({success: true, message: "successfully fetch"});
+        res.status(200).json({success: true, message: "successfully fetch",tests});
     } catch (error) {
         console.log("Error occuring: ",error);
         res.status(500).json({success: false,message: "Internal Server issue"});
@@ -24,7 +24,7 @@ export const fetchTestSeries = async(req:RequestWithUser, res: Response)=>{
 
 export const getTestById = async (req:RequestWithUser, res: Response) => {
     try {
-        const test = await TestSeries.findById(req.params.testId);
+        const test = await TestSeries.findById(req.params.testId).select("-questions.correctAnswer");
 
         if (!test || !test.isPublished)
         return res.status(404).json({ success: false,message: "Test not found" });
@@ -38,7 +38,6 @@ export const getTestById = async (req:RequestWithUser, res: Response) => {
         res.status(500).json({ message: "Error fetching test", error });
     }
 };
-
 
 export const submitTest = async(req: RequestWithUser,res: Response)=>{
     try {
@@ -55,6 +54,7 @@ export const submitTest = async(req: RequestWithUser,res: Response)=>{
         }
 
         let score = 0;
+
         const evaluatedAnswers = tests.questions.map((q: any) => {
             const studentAns = answers.find(
                 (a: any) => a.questionId === q._id.toString()
@@ -65,7 +65,8 @@ export const submitTest = async(req: RequestWithUser,res: Response)=>{
 
             if (q.type === "mcq" && studentAns?.answer === q.correctAnswer) {
                 isCorrect = true;
-                markObtained = q.marks || 0; 
+                markObtained = q.marks || 0;
+                score += markObtained; // ✅ Add to total score
             }
 
             return {
@@ -75,6 +76,8 @@ export const submitTest = async(req: RequestWithUser,res: Response)=>{
                 markObtained,
             };
         });
+
+        console.log("Final score:", score); // should now show correct total
 
         const submission = await Submission.create({
             testId: tests._id,
@@ -127,7 +130,7 @@ export const getAllResults = async(req: RequestWithUser,res: Response)=>{
             return res.status(403).json({ success: false,message: "Access denied." });
         }
 
-        res.status(200).json({success: true,resourceLimits});
+        res.status(200).json({success: true, results});
 
     } catch (error) {
         res.status(500).json({ success: false,message: "Error fetching result"});
