@@ -1,11 +1,15 @@
 import express from 'express'
+import cors from 'cors'
+import authRoutes from "./routes/user.route.js"
 
 const app = express();
 
-app.get("/",(req,res)=>{
-    res.send("i make the test series where application give test of different");
-})
+// middleware 
+app.use(cors({}));
+app.use(express.json());
 
-app.listen(3000,()=>{
-    console.log(`server is running on the port ${3000}`);
-})
+// routes
+app.use("/api/auth",authRoutes);
+
+
+export { app }
