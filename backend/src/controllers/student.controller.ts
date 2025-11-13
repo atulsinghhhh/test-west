@@ -2,7 +2,6 @@ import { TestSeries } from "../models/test.model.js";
 import { Submission } from "../models/submission.model.js";
 import type { Request, Response } from "express";
 import type { RequestWithUser } from "./user.controller.js"
-import { resourceLimits } from "worker_threads";
 
 export const fetchTestSeries = async(req:RequestWithUser, res: Response)=>{
     try {
