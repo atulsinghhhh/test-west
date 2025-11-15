@@ -16,8 +16,8 @@ export interface RequestWithUser extends Request {
 
 export const userSignup = async (req: Request, res: Response) => {
     try {
-        const { name, email, password, role } = req.body;
-        if (!name || !email || !password) {
+        const { username,name, email, password, role } = req.body;
+        if (!name || !email || !password || !username) {
             return res.status(400).json({ success: false, message: "All fields are required" });
         }
 
@@ -28,6 +28,7 @@ export const userSignup = async (req: Request, res: Response) => {
 
         const user = await User.create({
             name,
+            username,
             email,
             password,
             role
@@ -60,6 +61,7 @@ export const userLogin = async (req: Request, res: Response) => {
         if (!user) {
             return res.status(401).json({ success: false, message: "User not found" });
         }
+        
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
