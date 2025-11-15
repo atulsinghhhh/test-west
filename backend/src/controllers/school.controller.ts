@@ -1,7 +1,12 @@
-import type { Request,Response } from "express";
+import type { Response } from "express";
 import { School } from "../models/School.model.js";
 import { Teacher } from "../models/teacher.model.js";
 import type { RequestWithUser } from "./user.controller.js"
+import { Grade } from "../models/grade.model.js";
+import { Chapter } from "../models/chapter.model.js";
+import { Subject } from "../models/subject.model.js";
+import { Topic } from "../models/topic.model.js"
+import { subTopic } from "../models/subtopic.model.js";
 
 export const addTeachers = async(req: RequestWithUser, res: Response)=>{
     try {
@@ -74,4 +79,256 @@ export const getTeacher = async(req: RequestWithUser,res: Response)=>{
         return res.status(500).json({Success: false,message: "Internal server issue"});
     }
 }
+
+export const addGrade = async(req: RequestWithUser,res: Response)=>{
+    try {
+        const { gradeName }  = req.body;
+        if(!gradeName){
+            return res.status(400).json({success: false,message: "gradeName is required field"});
+        }
+
+        const newGrade=await Grade.create({
+            gradeName,
+            schoolId: req.user?._id
+        })
+        if(!newGrade){
+            return res.status(400).json({success: false,message: "failed to add grade"})
+        }
+
+        res.status(200).json({success: true, message: "successfully added grade"})
+    } catch (error) {
+        console.log("Error Occuring due to: ",error);
+        return res.status(500).json({Success: false,message: "Internal server issue"});
+    }
+}
+
+export const getGrade = async(req: RequestWithUser,res: Response)=>{
+    try {
+        const schoolId = req.user?._id;
+        const grades = await Grade.find({schoolId}).sort({gradeName: 1});
+
+        return res.status(200).json({ success: true,grades});
+    } catch (error) {
+        console.error("Error fetching grades:", error);
+        return res.status(500).json({Success: false,message: "Internal server issue"});
+    }
+}
+
+export const addChapters = async(req: RequestWithUser,res: Response)=>{
+    try {
+        const { chapterName } = req.body;
+        const schoolId = req.user?._id;
+        const { gradeId } = req.params;
+
+        if(!chapterName) {
+            return res.status(400).json({success: false, message: "chapter name is required field"});
+        }
+        
+        const newChapter = await Chapter.create({
+            chapterName,
+            schoolId: schoolId,
+            gradeId: gradeId
+        })
+
+        if(!newChapter){
+            return res.status(400).json({success: false,message: "failed to created new chapter"});
+        }
+
+        res.status(200).json({success: true,message: "successfully created a new chapter"})
+    } catch (error) {
+        console.log("Error Occuring due to: ",error);
+        return res.status(500).json({Success: false,message: "Internal server issue"});
+    }
+}
+
+export const getChapters = async(req: RequestWithUser,res: Response)=>{
+    try {
+        const { gradeId } = req.params;
+        const schoolId = req.user?._id;
+
+        const chapters=await Chapter.find({gradeId , schoolId}).sort({ chapterName: 1 });
+        if(!chapters){
+            return res.status(400).json({success: false,message: "failed to fetch the chapter"});
+        }
+
+        res.status(200).json({success: true,chapters})
+    } catch (error) {
+        console.error("Error fetching chapter:", error);
+        return res.status(500).json({Success: false,message: "Internal server issue"});
+    }
+}
+
+export const deleteChapter = async(req: RequestWithUser, res: Response)=>{
+    try {
+        
+    } catch (error) {
+        
+    }
+}
+
+export const addSubject = async(req: RequestWithUser,res: Response)=>{
+    try {
+        const { subjectName } = req.body;
+        const schoolId = req.user?._id;
+        const { chapterId  } = req.params;
+
+        if(!subjectName){
+            return res.status(200).json({success: false,message: "subject fields are required"})
+        }
+        
+        const newSubject=await Subject.create({
+            subjectName,
+            schoolId: schoolId,
+            chapterId: chapterId
+        })
+
+        if(!newSubject){
+            return res.status(400).json({success: false,message: "failed to created new subject"});
+        }
+
+        res.status(200).json({success: true,message: "created a new subject"})
+    } catch (error) {
+        console.log("Error Occuring due to: ",error);
+        return res.status(500).json({Success: false,message: "Internal server issue"});
+    }
+}
+
+export const getSubjects = async(req: RequestWithUser,res: Response)=>{
+    try {
+        const { chapterId } = req.params;
+        const subjectId = req.user?._id;
+
+        const subjects = await Subject.find({chapterId,subjectId});
+        if(!subjects){
+            return res.status(400).json({success: false,message: "failed to fetch the subject"});
+        }
+
+        res.status(200).json({success: false,subjects});
+    } catch (error) {
+        console.error("Error fetching subject:", error);
+        return res.status(500).json({Success: false,message: "Internal server issue"});
+    }
+}
+
+export const deleteSubject = async(req: RequestWithUser,res: Response)=>{
+    try {
+        
+    } catch (error) {
+        
+    }
+}
+
+export const addTopic = async(req: RequestWithUser,res: Response)=>{
+    try {
+        const { subjectId } = req.params;
+        const { topicName } = req.body;
+        const schoolId = req.user?._id;
+
+        const newTopic=await Topic.create({
+            schoolId: schoolId,
+            subjectId: subjectId,
+            topicName
+        })
+
+        if(!newTopic){
+            return res.status(400).json({success: false,message: "failed to created new topic"});
+        }
+
+        res.status(200).json({success: false,message: "added a new topic"})
+    } catch (error) {
+        console.log("Error Occuring due to: ",error);
+        return res.status(500).json({Success: false,message: "Internal server issue"});
+    }
+}
+
+export const getTopic = async(req: RequestWithUser,res: Response)=>{
+    try {
+        const { subjectId } =req.params;
+        const schoolId = req.user?._id;
+
+        const topics=await Topic.find({subjectId,schoolId});
+        if(!topics){
+            return res.status(400).json({success: false,message: "failed to fetch the subject"});
+        }
+
+        res.status(200).json({success: true,topics})
+        
+    } catch (error) {
+        console.error("Error fetching topic:", error);
+        return res.status(500).json({Success: false,message: "Internal server issue"});
+    }
+}
+
+export const deleteTopic = async(req: RequestWithUser,res: Response)=>{
+    try {
+        
+    } catch (error) {
+        
+    }
+}
+
+
+export const addSubtopic = async (req: RequestWithUser, res: Response) => {
+    try {
+        const { topicId } = req.params;
+        const { subtopicName } = req.body;
+        const schoolId = req.user?._id;
+
+        const newSubtopic = await subTopic.create({
+            schoolId: schoolId,
+            topicId: topicId,
+            subtopicName
+        });
+
+        if (!newSubtopic) {
+            return res.status(400).json({ success: false,message: "Failed to create new subtopic"});
+        }
+
+        return res.status(200).json({success: true, message: "Added a new subtopic"});
+
+    } catch (error) {
+        console.log("Error Occuring due to:", error);
+        return res.status(500).json({ success: false, message: "Internal server issue"});
+    }
+};
+
+export const getSubtopics = async (req: RequestWithUser, res: Response) => {
+    try {
+        const { topicId } = req.params;
+        const schoolId = req.user?._id;
+
+        const subtopics = await subTopic.find({ topicId, schoolId });
+
+        if (!subtopics) {
+            return res.status(400).json({success: false,message: "Failed to fetch subtopics"});
+        }
+
+        return res.status(200).json({success: true,subtopics});
+
+    } catch (error) {
+        console.error("Error fetching subtopics:", error);
+        return res.status(500).json({success: false,message: "Internal server issue"});
+    }
+};
+
+
+export const deleteSubtopic = async (req: RequestWithUser, res: Response) => {
+    try {
+        const { subtopicId } = req.params;
+        const schoolId = req.user?._id;
+        
+        const subtopic = await subTopic.findOne({ _id: subtopicId, schoolId });
+        if (!subtopic) {
+            return res.status(404).json({success: false,message: "Subtopic not found or unauthorized"});
+        }
+
+        await subTopic.deleteOne({ _id: subtopicId });
+
+        return res.status(200).json({success: true,message: "Subtopic deleted successfully"});
+
+    } catch (error) {
+        console.log("Error deleting subtopic:", error);
+        return res.status(500).json({success: false,message: "Internal server error"});
+    }
+};
 
