@@ -31,7 +31,7 @@ export const addQuestion = async(req: RequestWithUser,res:Response )=>{
     try {
         const { testId } = req.params;
         const { questions } = req.body;
-
+        
         if(!questions){ 
             return res.status(400).json({success: false,message: "this must required"});
         }
@@ -78,7 +78,15 @@ export const publishTest = async(req: RequestWithUser,res: Response)=>{
 export const getTeachersTest = async(req: RequestWithUser,res: Response)=>{
     try {
         const tests = await TestSeries.find({ createdBy: req.user?._id }).sort({ createdAt: -1 });
+        // debug console.log
+        // console.log("Length: ",tests.length);
+        // console.log("No of Tests: ",tests);
+        // console.log("current name: ",req.user?.name);
+        // console.log("email: ",req.user?.email);
+        // console.log("role: ",req.user?.role);
+        // console.log(req.user?._id);
         res.status(200).json({ success: true, tests });
+
     } catch (error) {
         res.status(500).json({ success: false, message: "Internal Server issue" });
     }

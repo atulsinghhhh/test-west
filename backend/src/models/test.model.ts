@@ -2,7 +2,7 @@ import mongoose,{ Schema } from "mongoose";
 
 const testSchema = new Schema({
     title: { type: String, required: true},
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User"},
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true},
     subject: { type: String, required: true},
     institution: { type: String },
     duration: { type: Number, required: true },
