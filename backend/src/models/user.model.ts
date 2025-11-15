@@ -8,7 +8,7 @@ const userSchema = new Schema({
         match: [/.+\@.+\..+/, "Please enter a valid email address"]
     },
     password: { type: String, required: true},
-    role: { type: String, enum: ['student','teacher','admin'], default: 'admin', required: true },
+    // role: { type: String, enum: ['student','teacher','admin'], default: 'admin', required: true },
     school:[{ type: mongoose.Schema.Types.ObjectId, ref: "School"}],
 },{timestamps: true});
 

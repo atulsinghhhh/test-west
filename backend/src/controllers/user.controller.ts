@@ -2,6 +2,7 @@ import { User } from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import type { Request, Response } from "express";
+import { School } from "../models/School.model.js";
 
 export interface IUserPayload {
     _id: string;
@@ -14,9 +15,9 @@ export interface RequestWithUser extends Request {
     user?: IUserPayload;
 }
 
-export const userSignup = async (req: Request, res: Response) => {
+export const AdminSignup = async (req: Request, res: Response) => {
     try {
-        const { username,name, email, password, role } = req.body;
+        const { username,name, email, password } = req.body;
         if (!name || !email || !password || !username) {
             return res.status(400).json({ success: false, message: "All fields are required" });
         }
@@ -30,20 +31,12 @@ export const userSignup = async (req: Request, res: Response) => {
             name,
             username,
             email,
-            password,
-            role
+            password
         });
 
-        const token = jwt.sign({ id: user._id,role: user.role }, process.env.JWT_SECRET!, { expiresIn: "7d" });
+        const token = jwt.sign({ id: user._id,email: user.email }, process.env.JWT_SECRET!, { expiresIn: "7d" });
 
-        res.cookie("token", token, {
-            httpOnly: true,
-            sameSite: "strict",
-            secure: process.env.NODE_ENV === "production",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
-
-        return res.status(201).json({ success: true, message: "Signup successful", user });
+        return res.status(201).json({ success: true, message: "Admin has been created ", user });
     } catch (error) {
         console.error("Signup error:", error);
         return res.status(500).json({ success: false, message: "Internal server error" });
@@ -57,9 +50,23 @@ export const userLogin = async (req: Request, res: Response) => {
             return res.status(400).json({ success: false, message: "All fields are required" });
         }
 
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(401).json({ success: false, message: "User not found" });
+        let user: any = null;
+        let role: "admin" | "school" | "teacher" | "student" | null = null;
+        
+        user = await User.findOne({email});
+        if(user){ // check for admin
+            role = 'admin';
+        }
+
+        if(!user){
+            user = await School.findOne({email});
+            if(user){ // check for school
+                role = 'school';
+            }
+        }
+
+        if(!user){
+            return res.status(404).json({success: false,message: "email not registered"})
         }
         
 
@@ -68,7 +75,7 @@ export const userLogin = async (req: Request, res: Response) => {
             return res.status(400).json({ success: false, message: "Invalid password" });
         }
 
-        const token = jwt.sign({ id: user._id,role: user.role }, process.env.JWT_SECRET!, { expiresIn: "7d" });
+        const token = jwt.sign({ id: user._id, email: user.email,role: role}, process.env.JWT_SECRET!, { expiresIn: "7d" });
 
         res.cookie("token", token, {
             httpOnly: true,

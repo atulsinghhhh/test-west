@@ -2,11 +2,13 @@ import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 import type { RequestWithUser } from "../controllers/user.controller.js";
+import { School } from "../models/School.model.js";
 
 interface JwtDecoded {
     id: string;
     iat: number;
     exp: number;
+    role: "admin" | "school" | "teacher" | "student";
 }
 
 export const verifyJwt = async (req: RequestWithUser, res: Response, next: NextFunction) => {
@@ -17,16 +19,26 @@ export const verifyJwt = async (req: RequestWithUser, res: Response, next: NextF
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtDecoded;
-        const user = await User.findById(decoded.id).select("-password");
+        const { id,role } = decoded;
+
+        let user : any =null;
+
+        if (role === "admin") {
+            user = await User.findById(id).select("-password");
+        }
+
+        if(role === "school") {
+            user = await School.findById(id).select("-password");
+        }
+
         if (!user) {
             return res.status(401).json({ success: false, message: "User not found" });
         }
 
         req.user = {
             _id: user._id.toString(),
-            name: user.name,
             email: user.email,
-            role: user.role
+            role: role,
         };
 
         next();
