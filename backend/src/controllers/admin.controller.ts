@@ -7,9 +7,9 @@ import { User } from "../models/user.model.js";
 export const createSchool = async(req: RequestWithUser,res: Response)=>{
     try {
         const adminId = req.user?._id;
-        const { name, email,password, questionLimit,paperLimit } = req.body;
+        const { name, email,password, questionAdminLimit,paperAdminLimit } = req.body;
     
-        if(!name || !email || !password || !questionLimit || !paperLimit){
+        if(!name || !email || !password || !questionAdminLimit || !paperAdminLimit){
             return res.status(400).json({ success: false,message: "all fields should be required!"});
         }
 
@@ -17,8 +17,8 @@ export const createSchool = async(req: RequestWithUser,res: Response)=>{
             name,
             email,
             password,
-            questionLimit,
-            paperLimit,
+            questionAdminLimit,
+            paperAdminLimit,
             admin: adminId
         });
         if(!newSchool){
