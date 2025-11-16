@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 import type { RequestWithUser } from "../controllers/user.controller.js";
 import { School } from "../models/School.model.js";
+import { Teacher } from "../models/teacher.model.js";
+import { Student } from "../models/student.model.js";
 
 interface JwtDecoded {
     id: string;
@@ -29,6 +31,14 @@ export const verifyJwt = async (req: RequestWithUser, res: Response, next: NextF
 
         if(role === "school") {
             user = await School.findById(id).select("-password");
+        }
+
+        if(role === "teacher") {
+            user = await Teacher.findById(id).select("-password");
+        }
+
+        if(role === "student") {
+            user = await Student.findById(id).select("-password");
         }
 
         if (!user) {

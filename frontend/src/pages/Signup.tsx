@@ -7,7 +7,7 @@ interface User {
     name: string
     email: string
     password: string
-    role?: string
+    username: string
 }
 
 function Signup() {
@@ -16,9 +16,9 @@ function Signup() {
 
     const [formState, setFormState] = useState<User>({
         name: "",
+        username: "",
         email: "",
         password: "",
-        role: "",
     });
 
     const [message, setMessage] = useState<string>("");
@@ -37,13 +37,13 @@ function Signup() {
 
         try {
             const res = await axios.post(`${baseurl}/auth/signup`,{
-                name: formState.name,email: formState.email,password: formState.password
+                name: formState.name,email: formState.email,password: formState.password, username:formState.username
             }, { withCredentials: true }); 
 
             const data = res?.data;
             if (data.success) {
                 setMessage("Signup successful! You can login now.");
-                setFormState({ name: "", email: "", password: ''});
+                setFormState({ name: "", email: "", password: '',username: ''});
             }
 
             navigate("/");
@@ -75,6 +75,14 @@ function Signup() {
                         onChange={handleChange}
                         className="w-full px-3 py-2 rounded-lg bg-[#0d1117] border border-[#30363d] focus:border-blue-500 outline-none"
                     />
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="Full Name"
+                        value={formState.username}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 rounded-lg bg-[#0d1117] border border-[#30363d] focus:border-blue-500 outline-none"
+                    />
 
                     <input
                         type="email"
@@ -94,16 +102,6 @@ function Signup() {
                         className="w-full px-3 py-2 rounded-lg bg-[#0d1117] border border-[#30363d] focus:border-purple-500 outline-none"
                     />
 
-                    <select
-                        name="role"
-                        value={formState.role}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 rounded-lg bg-[#0d1117] border border-[#30363d] focus:border-purple-500 outline-none"
-                    >
-                        <option value="">Select Role</option>
-                        <option value="student">Student</option>
-                        <option value="teacher">Teacher</option>
-                    </select>
 
                     <button
                         type="submit"

@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import type { Request, Response } from "express";
 import { School } from "../models/School.model.js";
+import { Teacher } from "../models/teacher.model.js";
 
 export interface IUserPayload {
     _id: string;
@@ -62,6 +63,13 @@ export const userLogin = async (req: Request, res: Response) => {
             user = await School.findOne({email});
             if(user){ // check for school
                 role = 'school';
+            }
+        }
+
+        if(!user){
+            user = await Teacher.findOne({email});
+            if(user){
+                role = 'teacher'
             }
         }
 
