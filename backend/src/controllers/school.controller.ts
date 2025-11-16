@@ -7,6 +7,7 @@ import { Chapter } from "../models/chapter.model.js";
 import { Subject } from "../models/subject.model.js";
 import { Topic } from "../models/topic.model.js"
 import { subTopic } from "../models/subtopic.model.js";
+import { trusted } from "mongoose";
 
 export const addTeachers = async(req: RequestWithUser, res: Response)=>{
     try {
@@ -95,7 +96,7 @@ export const addGrade = async(req: RequestWithUser,res: Response)=>{
             return res.status(400).json({success: false,message: "failed to add grade"})
         }
 
-        res.status(200).json({success: true, message: "successfully added grade"})
+        res.status(200).json({success: true, message: "successfully added grade",newGrade})
     } catch (error) {
         console.log("Error Occuring due to: ",error);
         return res.status(500).json({Success: false,message: "Internal server issue"});
@@ -118,7 +119,7 @@ export const addChapters = async(req: RequestWithUser,res: Response)=>{
     try {
         const { chapterName } = req.body;
         const schoolId = req.user?._id;
-        const { gradeId } = req.params;
+        const { subjectId } = req.params;
 
         if(!chapterName) {
             return res.status(400).json({success: false, message: "chapter name is required field"});
@@ -127,14 +128,14 @@ export const addChapters = async(req: RequestWithUser,res: Response)=>{
         const newChapter = await Chapter.create({
             chapterName,
             schoolId: schoolId,
-            gradeId: gradeId
+            subjectId: subjectId
         })
 
         if(!newChapter){
             return res.status(400).json({success: false,message: "failed to created new chapter"});
         }
 
-        res.status(200).json({success: true,message: "successfully created a new chapter"})
+        res.status(200).json({success: true,message: "successfully created a new chapter",newChapter})
     } catch (error) {
         console.log("Error Occuring due to: ",error);
         return res.status(500).json({Success: false,message: "Internal server issue"});
@@ -143,10 +144,10 @@ export const addChapters = async(req: RequestWithUser,res: Response)=>{
 
 export const getChapters = async(req: RequestWithUser,res: Response)=>{
     try {
-        const { gradeId } = req.params;
+        const { subjectId } = req.params;
         const schoolId = req.user?._id;
 
-        const chapters=await Chapter.find({gradeId , schoolId}).sort({ chapterName: 1 });
+        const chapters=await Chapter.find({subjectId , schoolId}).sort({ chapterName: 1 });
         if(!chapters){
             return res.status(400).json({success: false,message: "failed to fetch the chapter"});
         }
@@ -170,7 +171,7 @@ export const addSubject = async(req: RequestWithUser,res: Response)=>{
     try {
         const { subjectName } = req.body;
         const schoolId = req.user?._id;
-        const { chapterId  } = req.params;
+        const { gradeId  } = req.params;
 
         if(!subjectName){
             return res.status(200).json({success: false,message: "subject fields are required"})
@@ -179,14 +180,14 @@ export const addSubject = async(req: RequestWithUser,res: Response)=>{
         const newSubject=await Subject.create({
             subjectName,
             schoolId: schoolId,
-            chapterId: chapterId
+            gradeId: gradeId
         })
 
         if(!newSubject){
             return res.status(400).json({success: false,message: "failed to created new subject"});
         }
 
-        res.status(200).json({success: true,message: "created a new subject"})
+        res.status(200).json({success: true,message: "created a new subject",newSubject})
     } catch (error) {
         console.log("Error Occuring due to: ",error);
         return res.status(500).json({Success: false,message: "Internal server issue"});
@@ -195,10 +196,10 @@ export const addSubject = async(req: RequestWithUser,res: Response)=>{
 
 export const getSubjects = async(req: RequestWithUser,res: Response)=>{
     try {
-        const { chapterId } = req.params;
+        const { gradeId } = req.params;
         const subjectId = req.user?._id;
 
-        const subjects = await Subject.find({chapterId,subjectId});
+        const subjects = await Subject.find({gradeId,subjectId});
         if(!subjects){
             return res.status(400).json({success: false,message: "failed to fetch the subject"});
         }
@@ -220,13 +221,13 @@ export const deleteSubject = async(req: RequestWithUser,res: Response)=>{
 
 export const addTopic = async(req: RequestWithUser,res: Response)=>{
     try {
-        const { subjectId } = req.params;
+        const { chapterId } = req.params;
         const { topicName } = req.body;
         const schoolId = req.user?._id;
 
         const newTopic=await Topic.create({
             schoolId: schoolId,
-            subjectId: subjectId,
+            chapterId: chapterId,
             topicName
         })
 
@@ -234,7 +235,7 @@ export const addTopic = async(req: RequestWithUser,res: Response)=>{
             return res.status(400).json({success: false,message: "failed to created new topic"});
         }
 
-        res.status(200).json({success: false,message: "added a new topic"})
+        res.status(200).json({success: true,message: "added a new topic",newTopic})
     } catch (error) {
         console.log("Error Occuring due to: ",error);
         return res.status(500).json({Success: false,message: "Internal server issue"});
@@ -243,10 +244,10 @@ export const addTopic = async(req: RequestWithUser,res: Response)=>{
 
 export const getTopic = async(req: RequestWithUser,res: Response)=>{
     try {
-        const { subjectId } =req.params;
+        const { chapterId } =req.params;
         const schoolId = req.user?._id;
 
-        const topics=await Topic.find({subjectId,schoolId});
+        const topics=await Topic.find({chapterId,schoolId});
         if(!topics){
             return res.status(400).json({success: false,message: "failed to fetch the subject"});
         }
@@ -284,7 +285,7 @@ export const addSubtopic = async (req: RequestWithUser, res: Response) => {
             return res.status(400).json({ success: false,message: "Failed to create new subtopic"});
         }
 
-        return res.status(200).json({success: true, message: "Added a new subtopic"});
+        return res.status(200).json({success: true, message: "Added a new subtopic",newSubtopic});
 
     } catch (error) {
         console.log("Error Occuring due to:", error);

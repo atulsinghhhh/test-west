@@ -2,7 +2,7 @@ import mongoose,{ Schema} from "mongoose";
 
 const topicSchema = new Schema({
     schoolId: { type: Schema.Types.ObjectId, ref: "School", required: true },
-    subjectId: { type: Schema.Types.ObjectId, ref: "Subject", required: true },
+    chapterId: { type: Schema.Types.ObjectId, ref: "Chapter", required: true },
     topicName: { type: String, required: true }
 },{timestamps: true})
 
