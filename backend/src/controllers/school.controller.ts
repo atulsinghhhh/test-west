@@ -7,7 +7,7 @@ import { Chapter } from "../models/chapter.model.js";
 import { Subject } from "../models/subject.model.js";
 import { Topic } from "../models/topic.model.js"
 import { subTopic } from "../models/subtopic.model.js";
-import { trusted } from "mongoose";
+
 
 export const addTeachers = async(req: RequestWithUser, res: Response)=>{
     try {
@@ -74,7 +74,7 @@ export const getTeacher = async(req: RequestWithUser,res: Response)=>{
             return res.status(404).json({success: false,message: "school not found"})
         }
 
-        res.status(200).json({success: true,message: "fetch school that created by admin",teachers: school.teachers});
+        res.status(200).json({success: true,message: "fetch Teachers that created by School",teachers: school.teachers});
     } catch (error) {
         console.log("Error Occuring due to: ",error);
         return res.status(500).json({Success: false,message: "Internal server issue"});

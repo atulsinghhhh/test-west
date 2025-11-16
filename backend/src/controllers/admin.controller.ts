@@ -28,6 +28,7 @@ export const createSchool = async(req: RequestWithUser,res: Response)=>{
         await User.findByIdAndUpdate(adminId,{
             $push: {school: newSchool._id}
         })
+        //  TODO: ADDED FOR REMAINING PAPER AND QUESTION
 
         res.status(200).json({Success: true,message: "successfully created a new school",newSchool});
     } catch (error) {
