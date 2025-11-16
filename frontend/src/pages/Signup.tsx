@@ -46,7 +46,7 @@ function Signup() {
                 setFormState({ name: "", email: "", password: '',username: ''});
             }
 
-            navigate("/");
+            navigate("/login");
         } catch (err) {
             setError("Something went wrong");
         }
@@ -77,8 +77,8 @@ function Signup() {
                     />
                     <input
                         type="text"
-                        name="name"
-                        placeholder="Full Name"
+                        name="username"
+                        placeholder="username"
                         value={formState.username}
                         onChange={handleChange}
                         className="w-full px-3 py-2 rounded-lg bg-[#0d1117] border border-[#30363d] focus:border-blue-500 outline-none"

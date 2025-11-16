@@ -6,7 +6,7 @@ export interface IUser {
     name: string
     email: string
     password: string
-    role?: string
+    username?: string
 }
 
 interface IAuthContext {
@@ -45,6 +45,7 @@ export const AuthProvider = ({children}:{children: React.ReactNode})=>{
 
                 if(response.data?.user){
                     setUser(response.data.user);
+                    console.log("response: ",response.data.user);
                     setIsLoggedIn(true);
                     localStorage.setItem("user", JSON.stringify(response.data.user));
                 } else {

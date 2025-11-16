@@ -1,1 +1,13 @@
 @import "tailwindcss";
+
+
+@theme {
+  --color-admin-bg: #0d0f10;
+  --color-admin-panel: #111315;
+  --color-admin-hover: #16181d;
+  --color-admin-border: #1f242c;
+  --color-card: #14161A;
+  --color-primary: #2dd36f;
+  --color-foreground: #ffffff;
+  --color-muted-foreground: #9ca3af;
+}
