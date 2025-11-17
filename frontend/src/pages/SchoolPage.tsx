@@ -1,5 +1,6 @@
 import { useState } from "react";
 import CreateTeacher from "../components/school/CreateTeacher";
+import ViewTeacher from "../components/school/ViewTeacher";
 
 
 function SchoolPage() {
@@ -45,6 +46,7 @@ function SchoolPage() {
 
             <div className="flex-1 overflow-y-auto bg-admin-bg">
                 { tab === "teacher" && <CreateTeacher/> }
+                { tab === "views" && <ViewTeacher/> }
             </div>
         </div>
     )

@@ -1,20 +1,7 @@
 import { useEffect, useState } from "react"
 import { useAuth } from "../../context/AuthProvider";
 import axios from "axios";
-
-export interface ITeacher {
-    _id?: string;
-    name: string;
-    email: string;
-    grade: string;
-    school: string;
-
-    questionLimit: number;     
-    paperLimit: number;         
-
-    questionCount: number;      
-    paperCount: number;         
-}
+import type { ITeacher } from "./CreateTeacher";
 
 
 function ViewTeacher() {
@@ -30,6 +17,7 @@ function ViewTeacher() {
             try {
                 const response = await axios.get(`${baseurl}/school/`,{withCredentials: true});
                 console.log("View all teachers: ",response.data.teachers);
+                console.log("hello");
                 setMessage("Successfully fetch teacher details")
                 setTeachers(response.data.teachers);
             } catch (error) {
@@ -69,13 +57,13 @@ function ViewTeacher() {
                             <td className="p-4 text-muted-foreground">{teacher.grade}</td>
                             <td className="p-4 text-foreground">
                             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/20">
-                                {teacher.questionCount}/{teacher.questionLimit}
+                                {teacher.questionSchoolCount}/{teacher.questionSchoolLimit}
                             </span>
                             </td>
 
                             <td className="p-4 text-foreground">
                             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/20">
-                                {teacher.paperCount}/{teacher.paperLimit}
+                                {teacher.paperSchoolCount}/{teacher.paperSchoolLimit}
                             </span>
                             </td>
                         </tr>

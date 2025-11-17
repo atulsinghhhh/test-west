@@ -6,13 +6,15 @@ export interface IUser {
     name: string
     email: string
     password: string
-    username?: string
+    role: "admin" | "school" | "teacher" | "student";
 }
 
 interface IAuthContext {
     baseurl: string
     user: IUser | null
     setUser: (user: IUser | null) => void;
+    role: "admin" | "school" | "teacher" | "student" | null;
+    setRole: (role: "admin" | "school" | "teacher" | "student" | null) => void;
     isLoggedIn: boolean;
     setIsLoggedIn: (v: boolean) => void;
     loading: boolean;
@@ -35,6 +37,7 @@ export const AuthProvider = ({children}:{children: React.ReactNode})=>{
     const [user,setUser] = useState<IUser | null>(initialUser);
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(!!initialUser);
     const [loading, setLoading] = useState<boolean>(true);
+    const [role, setRole] = useState<"admin" | "school" | "teacher" | "student" | null>(initialUser?.role || null);
 
     useEffect(()=>{
         const fetchUser = async ()=>{
@@ -44,12 +47,15 @@ export const AuthProvider = ({children}:{children: React.ReactNode})=>{
                 });
 
                 if(response.data?.user){
-                    setUser(response.data.user);
-                    console.log("response: ",response.data.user);
+                    const u = response.data.user;
+                    setUser(u);
+                    setRole(u.role);
+                    console.log("response: ",u);
                     setIsLoggedIn(true);
-                    localStorage.setItem("user", JSON.stringify(response.data.user));
+                    localStorage.setItem("user", JSON.stringify(u));
                 } else {
                     setUser(null);
+                    setRole(null);
                     setIsLoggedIn(false);
                     localStorage.removeItem("user");
                 }
@@ -60,7 +66,7 @@ export const AuthProvider = ({children}:{children: React.ReactNode})=>{
             } finally{
                 setLoading(false);
             }
-        };
+        }; 
         fetchUser();
     }, [baseurl]);
 
@@ -68,6 +74,8 @@ export const AuthProvider = ({children}:{children: React.ReactNode})=>{
         baseurl,
         user,
         setUser,
+        role,
+        setRole,
         isLoggedIn,
         setIsLoggedIn,
         loading,
