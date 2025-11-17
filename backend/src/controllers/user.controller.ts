@@ -118,11 +118,30 @@ export const userLogout = async (req: Request, res: Response) => {
 export const getProfile = async (req: RequestWithUser, res: Response) => {
     try {
         const userId = req.user?._id;
-        if (!userId) {
+        const role = req.user?.role;
+
+        if (!userId || !role) {
             return res.status(401).json({ success: false, message: "Unauthorized" });
         }
 
-        const profile = await User.findById(userId).select("-password");
+        let profile: any =null;
+
+        if(role === "admin"){
+            profile = await User.findById(userId).select("-password");
+        }
+
+        if(role === "school") {
+            profile = await School.findById(userId).select("-password");
+        }
+
+        if(role === "teacher") {
+            profile = await School.findById(userId).select("-password");
+        }
+
+        // if(role === "student") {
+        //     profile = await School.findById(userId).select("-password");
+        // }
+
         if (!profile) {
             return res.status(404).json({ success: false, message: "Profile not found" });
         }

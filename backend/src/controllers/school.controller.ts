@@ -36,6 +36,7 @@ export const addTeachers = async(req: RequestWithUser, res: Response)=>{
         await School.findByIdAndUpdate(schoolId,{
             $push: {teachers: newTeacher._id}
         })
+        
 
         const remainingQuestions = newTeacher.questionSchoolLimit - newTeacher.questionSchoolCount;
         const remainingPapers = newTeacher.paperSchoolLimit - newTeacher.paperSchoolCount;
@@ -69,12 +70,13 @@ export const getTeacher = async(req: RequestWithUser,res: Response)=>{
         const schoolId = req.user?._id;
         console.log("SchoolId: ",schoolId);
 
-        const school = await School.findById(schoolId).populate("teachers");
-        if(!school){
+        const teachers = await Teacher.find({school: schoolId}).select("-password");
+        if(!teachers){
             return res.status(404).json({success: false,message: "school not found"})
         }
+        console.log("Teacher: ",teachers);
 
-        res.status(200).json({success: true,message: "fetch Teachers that created by School",teachers: school.teachers});
+        res.status(200).json({success: true,message: "fetch Teachers that created by School",teachers});
     } catch (error) {
         console.log("Error Occuring due to: ",error);
         return res.status(500).json({Success: false,message: "Internal server issue"});
