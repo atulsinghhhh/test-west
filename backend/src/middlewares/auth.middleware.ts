@@ -37,9 +37,9 @@ export const verifyJwt = async (req: RequestWithUser, res: Response, next: NextF
             user = await Teacher.findById(id).select("-password");
         }
 
-        if(role === "student") {
-            user = await Student.findById(id).select("-password");
-        }
+        // if(role === "student") {
+        //     user = await Student.findById(id).select("-password");
+        // }
 
         if (!user) {
             return res.status(401).json({ success: false, message: "User not found" });
