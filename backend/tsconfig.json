@@ -3,25 +3,23 @@
     "rootDir": "./src",
     "outDir": "./dist",
 
-    "module": "nodenext",
-    "target": "esnext",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ESNext",
 
-    "types": ["node", "express"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
 
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+    "skipLibCheck": true,
 
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "strict": true,
-    "jsx": "react-jsx",
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true
+    "strict": false,
+    "isolatedModules": false,
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
+
+    "types": ["node"],
+
+    "sourceMap": true
   },
 
   "include": ["src"],
