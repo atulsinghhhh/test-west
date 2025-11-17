@@ -1,8 +1,8 @@
 
 import type { Request,Response } from "express";
-import type { RequestWithUser } from "./user.controller.js"
-import { School } from "../models/School.model.js";
-import { User } from "../models/user.model.js";
+import type { RequestWithUser } from "./user.controller"
+import { School } from "../models/School.model";
+import { User } from "../models/user.model";
 
 export const createSchool = async(req: RequestWithUser,res: Response)=>{
     try {

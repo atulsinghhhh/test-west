@@ -1,11 +1,11 @@
 import express from 'express'
 import cors from 'cors'
 import cookieParser from "cookie-parser";
-import authRoutes from "./routes/user.route.js"
+import authRoutes from "./routes/user.route"
 // import TeacherRoutes  from "./routes/teacher.route.js"
 // import StudentRoutes from "./routes/student.route.js"
-import AdminRoutes from "./routes/admin.route.js"
-import SchoolRoutes from "./routes/school.route.js"
+import AdminRoutes from "./routes/admin.route"
+import SchoolRoutes from "./routes/school.route"
 
 const app = express();
 

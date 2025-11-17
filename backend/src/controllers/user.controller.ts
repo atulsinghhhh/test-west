@@ -1,9 +1,9 @@
-import { User } from "../models/user.model.js";
+import { User } from "../models/user.model";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import type { Request, Response } from "express";
-import { School } from "../models/School.model.js";
-import { Teacher } from "../models/teacher.model.js";
+import { School } from "../models/School.model";
+import { Teacher } from "../models/teacher.model";
 
 export interface IUserPayload {
     _id: string;
