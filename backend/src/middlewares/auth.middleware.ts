@@ -1,10 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { User } from "../models/user.model";
-import type { RequestWithUser } from "../controllers/user.controller";
-import { School } from "../models/School.model";
-import { Teacher } from "../models/teacher.model";
-import { Student } from "../models/student.model";
+import { User } from "../models/user.model.js";
+import type { RequestWithUser } from "../controllers/user.controller.js";
+import { School } from "../models/School.model.js";
+import { Teacher } from "../models/teacher.model.js";
+import { Student } from "../models/student.model.js";
 
 interface JwtDecoded {
     id: string;

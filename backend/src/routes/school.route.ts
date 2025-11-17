@@ -1,6 +1,6 @@
 import { Router } from "express"
-import { addChapters, addGrade, addSubject, addSubtopic, addTeachers, addTopic, deleteChapter, deleteSubject, deleteSubtopic, deleteTopic, getChapters, getGrade, getSubjects, getSubtopics, getTeacher, getTopic } from "../controllers/school.controller";
-import { verifyJwt } from "../middlewares/auth.middleware";
+import { addChapters, addGrade, addSubject, addSubtopic, addTeachers, addTopic, deleteChapter, deleteSubject, deleteSubtopic, deleteTopic, getChapters, getGrade, getSubjects, getSubtopics, getTeacher, getTopic } from "../controllers/school.controller.js";
+import { verifyJwt } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 

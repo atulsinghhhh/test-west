@@ -1,12 +1,12 @@
 import type { Response } from "express";
-import { School } from "../models/School.model";
+import { School } from "../models/School.model.js";
 import { Teacher } from "../models/teacher.model.js";
-import type { RequestWithUser } from "./user.controller"
-import { Grade } from "../models/grade.model";
-import { Chapter } from "../models/chapter.model";
-import { Subject } from "../models/subject.model";
-import { Topic } from "../models/topic.model"
-import { subTopic } from "../models/subtopic.model";
+import type { RequestWithUser } from "./user.controller.js"
+import { Grade } from "../models/grade.model.js";
+import { Chapter } from "../models/chapter.model.js";
+import { Subject } from "../models/subject.model.js";
+import { Topic } from "../models/topic.model.js"
+import { subTopic } from "../models/subtopic.model.js";
 
 
 export const addTeachers = async(req: RequestWithUser, res: Response)=>{

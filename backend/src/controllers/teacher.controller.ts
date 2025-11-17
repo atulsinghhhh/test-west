@@ -1,7 +1,7 @@
-import { model } from "../lib/ai";
-import { Question } from "../models/question.model";
+import { model } from "../lib/ai.js";
+import { Question } from "../models/question.model.js";
 import type { Response } from "express";
-import type { RequestWithUser } from "./user.controller"
+import type { RequestWithUser } from "./user.controller.js"
 
 export const addStudents = async(req: RequestWithUser,res: Response)=>{
     try {
