@@ -65,7 +65,7 @@ function CreateSchool() {
         <div className="w-full max-w-3xl bg-card p-8 rounded-xl border border-admin-border shadow-lg">
             
             <h2 className="text-2xl font-semibold text-foreground mb-6">
-            Create New School
+                Create New School
             </h2>
 
             {message && (
