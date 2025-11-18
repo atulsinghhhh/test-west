@@ -3,6 +3,7 @@ import CreateTeacher from "../components/school/CreateTeacher";
 import ViewTeacher from "../components/school/ViewTeacher";
 
 
+
 function SchoolPage() {
     const [tab, setTab] = useState("create");
     
