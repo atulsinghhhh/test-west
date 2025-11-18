@@ -116,7 +116,7 @@ export const getGrade = async (req: RequestWithUser, res: Response) => {
         await School.findByIdAndUpdate(req.user?._id, {
             $push: { grades: grades }
         });
-        console.log("Grades: ", grades);
+        // console.log("Grades: ", grades);
         return res.status(200).json({ success: true, grades });
     } catch (error) {
         console.error("Error fetching grades:", error);
