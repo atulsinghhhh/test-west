@@ -7,6 +7,12 @@ export interface IUser {
     email: string
     password: string
     role: "admin" | "school" | "teacher" | "student";
+    grade?: string;
+    school?: string;
+    questionSchoolLimit?: number;
+    questionSchoolCount?: number;
+    paperSchoolLimit?: number;
+    paperSchoolCount?: number;
 }
 
 interface IAuthContext {
@@ -22,7 +28,7 @@ interface IAuthContext {
 
 export const AuthContext = createContext<IAuthContext | null>(null);
 
-export const AuthProvider = ({children}:{children: React.ReactNode})=>{
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const baseurl = import.meta.env.VITE_BACKEND_URL
 
     const initialUser = (() => {
@@ -34,23 +40,23 @@ export const AuthProvider = ({children}:{children: React.ReactNode})=>{
         }
     })();
 
-    const [user,setUser] = useState<IUser | null>(initialUser);
+    const [user, setUser] = useState<IUser | null>(initialUser);
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(!!initialUser);
     const [loading, setLoading] = useState<boolean>(true);
     const [role, setRole] = useState<"admin" | "school" | "teacher" | "student" | null>(initialUser?.role || null);
 
-    useEffect(()=>{
-        const fetchUser = async ()=>{
+    useEffect(() => {
+        const fetchUser = async () => {
             try {
                 const response = await axios.get(`${baseurl}/auth/me`, {
                     withCredentials: true
                 });
 
-                if(response.data?.user){
+                if (response.data?.user) {
                     const u = response.data.user;
                     setUser(u);
                     setRole(u.role);
-                    console.log("response: ",u);
+                    console.log("response: ", u);
                     setIsLoggedIn(true);
                     localStorage.setItem("user", JSON.stringify(u));
                 } else {
@@ -63,10 +69,10 @@ export const AuthProvider = ({children}:{children: React.ReactNode})=>{
                 setUser(null);
                 setIsLoggedIn(false);
                 localStorage.removeItem("user");
-            } finally{
+            } finally {
                 setLoading(false);
             }
-        }; 
+        };
         fetchUser();
     }, [baseurl]);
 

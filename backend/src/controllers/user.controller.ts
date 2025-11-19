@@ -135,7 +135,7 @@ export const getProfile = async (req: RequestWithUser, res: Response) => {
         }
 
         if(role === "teacher") {
-            profile = await School.findById(userId).select("-password");
+            profile = await Teacher.findById(userId).select("-password");
         }
 
         // if(role === "student") {
