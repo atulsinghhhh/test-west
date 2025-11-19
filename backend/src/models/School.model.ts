@@ -9,8 +9,8 @@ const schoolSchema = new Schema({
     },
     admin: { type: mongoose.Schema.Types.ObjectId, ref: "User"},
     password: { type: String, required: true },
-    questionAdminLimit: { type: Number, required: true },
-    paperAdminLimit: { type: Number, required: true },
+    questionAdminLimit: { type: Number },
+    paperAdminLimit: { type: Number },
     paperAdminCount: { type: Number, default: 0 },
     questionAdminCount: { type: Number, default: 0 },
 

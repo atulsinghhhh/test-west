@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import type { Request, Response } from "express";
 import { School } from "../models/School.model.js";
 import { Teacher } from "../models/teacher.model.js";
+import { ensureTeacherGradeFields } from "../lib/teacherGrade.js";
 
 export interface IUserPayload {
     _id: string;
@@ -18,7 +19,7 @@ export interface RequestWithUser extends Request {
 
 export const AdminSignup = async (req: Request, res: Response) => {
     try {
-        const { username,name, email, password } = req.body;
+        const { username, name, email, password } = req.body;
         if (!name || !email || !password || !username) {
             return res.status(400).json({ success: false, message: "All fields are required" });
         }
@@ -35,7 +36,7 @@ export const AdminSignup = async (req: Request, res: Response) => {
             password
         });
 
-        const token = jwt.sign({ id: user._id,email: user.email }, process.env.JWT_SECRET!, { expiresIn: "7d" });
+        const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET!, { expiresIn: "7d" });
 
         return res.status(201).json({ success: true, message: "Admin has been created ", user });
     } catch (error) {
@@ -53,38 +54,42 @@ export const userLogin = async (req: Request, res: Response) => {
 
         let user: any = null;
         let role: "admin" | "school" | "teacher" | "student" | null = null;
-        
-        user = await User.findOne({email});
-        if(user){ // check for admin
+
+        user = await User.findOne({ email });
+        if (user) { // check for admin
             role = 'admin';
         }
 
-        if(!user){
-            user = await School.findOne({email});
-            if(user){ // check for school
+        if (!user) {
+            user = await School.findOne({ email });
+            if (user) { // check for school
                 role = 'school';
             }
         }
 
-        if(!user){
-            user = await Teacher.findOne({email});
-            if(user){
+        if (!user) {
+            user = await Teacher.findOne({ email });
+            if (user) {
                 role = 'teacher'
             }
         }
 
-        if(!user){
-            return res.status(404).json({success: false,message: "email not registered"})
+        if (!user) {
+            return res.status(404).json({ success: false, message: "email not registered" })
         }
-        
+
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ success: false, message: "Invalid password" });
         }
 
-        const token = jwt.sign({ id: user._id, email: user.email,role: role}, process.env.JWT_SECRET!, { expiresIn: "7d" });
-        console.log("Token is generated: ",token);
+        if (role === "teacher") {
+            await ensureTeacherGradeFields(user);
+        }
+
+        const token = jwt.sign({ id: user._id, email: user.email, role: role }, process.env.JWT_SECRET!, { expiresIn: "7d" });
+        console.log("Token is generated: ", token);
 
         res.cookie("token", token, {
             httpOnly: true,
@@ -94,7 +99,7 @@ export const userLogin = async (req: Request, res: Response) => {
         });
 
 
-        return res.status(200).json({ success: true, message: "Login successful",user });
+        return res.status(200).json({ success: true, message: "Login successful", user });
     } catch (error) {
         console.error("Login error:", error);
         return res.status(500).json({ success: false, message: "Internal server error" });
@@ -108,7 +113,7 @@ export const userLogout = async (req: Request, res: Response) => {
             sameSite: "strict",
             secure: process.env.NODE_ENV === "production",
         });
-        
+
         return res.status(200).json({ success: true, message: "Logged out successfully" });
     } catch (error) {
         return res.status(500).json({ success: false, message: "Logout failed", error });
@@ -124,18 +129,21 @@ export const getProfile = async (req: RequestWithUser, res: Response) => {
             return res.status(401).json({ success: false, message: "Unauthorized" });
         }
 
-        let profile: any =null;
+        let profile: any = null;
 
-        if(role === "admin"){
+        if (role === "admin") {
             profile = await User.findById(userId).select("-password");
         }
 
-        if(role === "school") {
+        if (role === "school") {
             profile = await School.findById(userId).select("-password");
         }
 
-        if(role === "teacher") {
+        if (role === "teacher") {
             profile = await Teacher.findById(userId).select("-password");
+            if (profile) {
+                await ensureTeacherGradeFields(profile);
+            }
         }
 
         // if(role === "student") {

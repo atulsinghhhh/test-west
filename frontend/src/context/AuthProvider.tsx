@@ -8,6 +8,8 @@ export interface IUser {
     password: string
     role: "admin" | "school" | "teacher" | "student";
     grade?: string;
+    gradeId?: string;
+    gradeName?: string;
     school?: string;
     questionSchoolLimit?: number;
     questionSchoolCount?: number;
@@ -52,8 +54,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     withCredentials: true
                 });
 
-                if (response.data?.user) {
-                    const u = response.data.user;
+                const payload = response.data?.profile || response.data?.user;
+
+                if (payload) {
+                    const u = payload;
                     setUser(u);
                     setRole(u.role);
                     console.log("response: ", u);

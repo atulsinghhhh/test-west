@@ -12,16 +12,22 @@ import { subTopic } from "../models/subtopic.model.js";
 export const addTeachers = async (req: RequestWithUser, res: Response) => {
     try {
         const schoolId = req.user?._id;
-        const { name, email, password, grade, questionSchoolLimit, paperSchoolLimit } = req.body;
-        if (!name || !email || !password || !grade || !paperSchoolLimit || !questionSchoolLimit) {
+        const { name, email, password, gradeId, questionSchoolLimit, paperSchoolLimit } = req.body;
+        if (!name || !email || !password || !gradeId || !paperSchoolLimit || !questionSchoolLimit) {
             return res.status(400).json({ success: false, message: "all fields are required" });
+        }
+
+        const grade = await Grade.findOne({ _id: gradeId, schoolId });
+        if (!grade) {
+            return res.status(404).json({ success: false, message: "grade not found for this school" });
         }
 
         const newTeacher = await Teacher.create({
             name,
             email,
             password,
-            grade,
+            gradeId: grade._id,
+            gradeName: grade.gradeName,
             questionSchoolLimit,
             paperSchoolLimit,
             school: schoolId,
@@ -47,7 +53,8 @@ export const addTeachers = async (req: RequestWithUser, res: Response) => {
                 _id: newTeacher._id,
                 name: newTeacher.name,
                 email: newTeacher.email,
-                grade: newTeacher.grade,
+                gradeId: newTeacher.gradeId,
+                gradeName: newTeacher.gradeName,
                 school: schoolId,
 
                 questionLimit: newTeacher.questionSchoolLimit,

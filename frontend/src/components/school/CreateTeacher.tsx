@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "../../context/AuthProvider"
 import axios from "axios"
 
@@ -7,7 +7,8 @@ export interface ITeacher {
     name: string
     email: string
     password: string
-    grade: string
+    gradeId: string
+    gradeName?: string
     questionSchoolLimit: number,
     paperSchoolLimit: number
     paperSchoolCount?: number,
@@ -17,35 +18,52 @@ export interface ITeacher {
 
 function CreateTeacher() {
     const { baseurl } = useAuth();
-    const [ teacherData, setTeacherData ] = useState<ITeacher>({
+    const [teacherData, setTeacherData] = useState<ITeacher>({
         name: "",
         email: "",
-        grade: "",
+        gradeId: "",
         password: "",
         questionSchoolLimit: 0,
         paperSchoolLimit: 0
     });
-    const [ message,setMessage ] = useState<String | null>("");
-    const [ error,setError ] = useState<String | null>("");
-    const [loading,setLoading ] = useState<boolean>(false);
+    const [message, setMessage] = useState<String | null>("");
+    const [error, setError] = useState<String | null>("");
+    const [loading, setLoading] = useState<boolean>(false);
+    const [grades, setGrades] = useState<{ _id: string; gradeName: string }[]>([]);
+    const [gradeError, setGradeError] = useState("");
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void=>{
-        const { name,value } = e.target;
-        setTeacherData((prev) =>({
+    useEffect(() => {
+        const fetchGrades = async () => {
+            try {
+                const response = await axios.get(`${baseurl}/school/grade`, {
+                    withCredentials: true
+                });
+                setGrades(response.data.grades || []);
+            } catch (err) {
+                console.error(err);
+                setGradeError("Failed to fetch grades");
+            }
+        };
+        fetchGrades();
+    }, [baseurl]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
+        const { name, value } = e.target;
+        setTeacherData((prev) => ({
             ...prev,
             [name]: name === "questionSchoolLimit" || name === "paperSchoolLimit"
-            ? Number(value)
-            : value
+                ? Number(value)
+                : value
         }));
     }
 
-    const createTeacher = async(e:React.FormEvent)=>{
+    const createTeacher = async (e: React.FormEvent) => {
         e.preventDefault();
         setMessage("");
         setError("");
         setLoading(true);
         try {
-            await axios.post(`${baseurl}/school/add`,teacherData,{
+            await axios.post(`${baseurl}/school/add`, teacherData, {
                 withCredentials: true
             });
             setMessage("Teacher created successfully !")
@@ -53,7 +71,7 @@ function CreateTeacher() {
                 name: "",
                 email: "",
                 password: "",
-                grade: "",
+                gradeId: "",
                 questionSchoolLimit: 0,
                 paperSchoolLimit: 0
             })
@@ -84,8 +102,8 @@ function CreateTeacher() {
 
                 <form onSubmit={createTeacher}
                     className="grid grid-cols-1 md:grid-cols-2 gap-6"
-                    >
-                    
+                >
+
                     <div className="space-y-2">
                         <label htmlFor="name" className="text-foreground font-medium ">
                             Teacher name
@@ -135,19 +153,27 @@ function CreateTeacher() {
                     </div>
 
                     <div className="space-y-2">
-                        <label htmlFor="name" className="text-foreground font-medium ">
+                        <label htmlFor="gradeId" className="text-foreground font-medium ">
                             Grade
                         </label>
-                        <input
-                            id="grade"
-                            type="text"
-                            name="grade"
-                            value={teacherData.grade}
+                        <select
+                            id="gradeId"
+                            name="gradeId"
+                            value={teacherData.gradeId}
                             onChange={handleChange}
-                            placeholder="Enter Grade"
                             className="w-full mt-4 bg-input border border-admin-border rounded-lg px-4 py-2 text-foreground focus:ring-2 focus:ring-primary outline-none"
                             required
-                        />
+                        >
+                            <option value="">Select grade</option>
+                            {grades.map((grade) => (
+                                <option key={grade._id} value={grade._id}>
+                                    {grade.gradeName}
+                                </option>
+                            ))}
+                        </select>
+                        {gradeError && (
+                            <p className="text-sm text-red-500">{gradeError}</p>
+                        )}
                     </div>
 
                     <div className="space-y-2">
@@ -193,7 +219,7 @@ function CreateTeacher() {
                     </div>
                 </form>
             </div>
-        
+
         </div>
     )
 }

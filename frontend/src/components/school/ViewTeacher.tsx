@@ -6,17 +6,17 @@ import type { ITeacher } from "./CreateTeacher";
 
 function ViewTeacher() {
     const { baseurl } = useAuth();
-    const [ teachers,setTeachers] = useState<ITeacher[]>([]);
-    const [ message, setMessage ] = useState<String | null>("");
-    const [ error, setError ] = useState<String | null> ("");
+    const [teachers, setTeachers] = useState<ITeacher[]>([]);
+    const [message, setMessage] = useState<String | null>("");
+    const [error, setError] = useState<String | null>("");
 
-    useEffect(()=>{
-        const viewTeachers = async()=>{
+    useEffect(() => {
+        const viewTeachers = async () => {
             setMessage("");
             setError("");
             try {
-                const response = await axios.get(`${baseurl}/school/`,{withCredentials: true});
-                console.log("View all teachers: ",response.data.teachers);
+                const response = await axios.get(`${baseurl}/school/`, { withCredentials: true });
+                console.log("View all teachers: ", response.data.teachers);
                 console.log("hello");
                 setMessage("Successfully fetch teacher details")
                 setTeachers(response.data.teachers);
@@ -26,7 +26,7 @@ function ViewTeacher() {
         }
 
         viewTeachers();
-    },[])
+    }, [])
     return (
         <div className="p-8">
             <h1 className="text-2xl font-bold mb-6 text-foreground tracking-tight">
@@ -35,52 +35,52 @@ function ViewTeacher() {
 
             <div className="rounded-xl border border-admin-border bg-card overflow-hidden shadow-lg">
                 <div className="overflow-x-auto">
-                <table className="w-full">
-                    <thead className="bg-admin-panel border-b border-admin-border">
-                    <tr>
-                        <th className="p-4 text-left text-sm font-semibold text-foreground tracking-wide">Name</th>
-                        <th className="p-4 text-left text-sm font-semibold text-foreground tracking-wide">Email</th>
-                        <th className="p-4 text-left text-sm font-semibold text-foreground tracking-wide">Grade</th>
-                        <th className="p-4 text-left text-sm font-semibold text-foreground tracking-wide">Questions</th>
-                        <th className="p-4 text-left text-sm font-semibold text-foreground tracking-wide">Papers</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {teachers.length > 0 ? (
-                        teachers.map((teacher) => (
-                        <tr
-                            key={teacher._id}
-                            className="border-t border-admin-border hover:bg-admin-hover transition-colors"
-                        >
-                            <td className="p-4 text-foreground font-medium">{teacher.name}</td>
-                            <td className="p-4 text-muted-foreground">{teacher.email}</td>
-                            <td className="p-4 text-muted-foreground">{teacher.grade}</td>
-                            <td className="p-4 text-foreground">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/20">
-                                {teacher.questionSchoolCount}/{teacher.questionSchoolLimit}
-                            </span>
-                            </td>
+                    <table className="w-full">
+                        <thead className="bg-admin-panel border-b border-admin-border">
+                            <tr>
+                                <th className="p-4 text-left text-sm font-semibold text-foreground tracking-wide">Name</th>
+                                <th className="p-4 text-left text-sm font-semibold text-foreground tracking-wide">Email</th>
+                                <th className="p-4 text-left text-sm font-semibold text-foreground tracking-wide">Grade</th>
+                                <th className="p-4 text-left text-sm font-semibold text-foreground tracking-wide">Questions</th>
+                                <th className="p-4 text-left text-sm font-semibold text-foreground tracking-wide">Papers</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {teachers.length > 0 ? (
+                                teachers.map((teacher) => (
+                                    <tr
+                                        key={teacher._id}
+                                        className="border-t border-admin-border hover:bg-admin-hover transition-colors"
+                                    >
+                                        <td className="p-4 text-foreground font-medium">{teacher.name}</td>
+                                        <td className="p-4 text-muted-foreground">{teacher.email}</td>
+                                        <td className="p-4 text-muted-foreground">{teacher.gradeName || (teacher as any).grade || "N/A"}</td>
+                                        <td className="p-4 text-foreground">
+                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/20">
+                                                {teacher.questionSchoolCount}/{teacher.questionSchoolLimit}
+                                            </span>
+                                        </td>
 
-                            <td className="p-4 text-foreground">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/20">
-                                {teacher.paperSchoolCount}/{teacher.paperSchoolLimit}
-                            </span>
-                            </td>
-                        </tr>
-                        ))
-                    ) : (
-                        <tr>
-                        <td colSpan={5} className="p-6 text-center text-muted-foreground">
-                            No teachers found.
-                        </td>
-                        </tr>
-                    )}
-                    </tbody>
-                </table>
+                                        <td className="p-4 text-foreground">
+                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/20">
+                                                {teacher.paperSchoolCount}/{teacher.paperSchoolLimit}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={5} className="p-6 text-center text-muted-foreground">
+                                        No teachers found.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-      {/* Messages */}
+            {/* Messages */}
             {message && (
                 <p className="text-primary mt-4 text-sm">{message}</p>
             )}

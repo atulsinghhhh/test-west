@@ -4,7 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
-    const { baseurl } = useAuth();
+    const { baseurl, setUser, setRole, setIsLoggedIn } = useAuth();
     const navigate = useNavigate();
 
     const [formState, setFormState] = useState({
@@ -39,8 +39,22 @@ function Login() {
             const data = res.data;
 
             if (data.success) {
+                const user = data.user;
+                setUser(user);
+                setRole(user.role);
+                setIsLoggedIn(true);
+                localStorage.setItem("user", JSON.stringify(user));
+
                 setMessage("Login successful!");
-                setTimeout(() => navigate("/"), 800); 
+
+                const destination =
+                    user.role === "teacher"
+                        ? "/teacher"
+                        : user.role === "school"
+                            ? "/school"
+                            : "/dashboard";
+
+                setTimeout(() => navigate(destination), 600);
             }
         } catch (err: any) {
             if (err.response?.data?.message) {
