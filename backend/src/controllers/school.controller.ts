@@ -84,39 +84,34 @@ export const getTeacher = async (req: RequestWithUser, res: Response) => {
     }
 }
 
-export const addGrade = async(req: RequestWithUser,res: Response)=>{
+export const addGrade = async (req: RequestWithUser, res: Response) => {
     try {
-        const { gradeName }  = req.body;
-        if(!gradeName){
-            return res.status(400).json({success: false,message: "gradeName is required field"});
+        const { gradeName } = req.body;
+        if (!gradeName) {
+            return res.status(400).json({ success: false, message: "gradeName is required field" });
         }
 
-        const newGrade=await Grade.create({
+        const newGrade = await Grade.create({
             gradeName,
             schoolId: req.user?._id
         })
-        if(!newGrade){
-            return res.status(400).json({success: false,message: "failed to add grade"})
+        if (!newGrade) {
+            return res.status(400).json({ success: false, message: "failed to add grade" })
         }
 
-        res.status(200).json({success: true, message: "successfully added grade",newGrade})
+        res.status(200).json({ success: true, message: "successfully added grade", newGrade })
     } catch (error) {
-        console.log("Error Occuring due to: ",error);
-        return res.status(500).json({Success: false,message: "Internal server issue"});
+        console.log("Error Occuring due to: ", error);
+        return res.status(500).json({ Success: false, message: "Internal server issue" });
     }
 }
 
 export const getGrade = async (req: RequestWithUser, res: Response) => {
     try {
-        const grades = await Grade.find().sort({ gradeName: 1 });
-        if (!grades) {
-            return res.status(400).json({ success: false, message: "failed to fetch the grades" });
-        }
+        const schoolId = req.user?._id;
 
-        await School.findByIdAndUpdate(req.user?._id, {
-            $push: { grades: grades }
-        });
-        // console.log("Grades: ", grades);
+        const grades = await Grade.find({ schoolId }).sort({ gradeName: 1 });
+
         return res.status(200).json({ success: true, grades });
     } catch (error) {
         console.error("Error fetching grades:", error);
