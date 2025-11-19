@@ -8,4 +8,5 @@ const router = Router();
 router.post("/question/generate", verifyJwt, generateQuestionAI);
 
 
+
 export default router
