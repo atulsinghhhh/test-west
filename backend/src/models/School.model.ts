@@ -4,7 +4,8 @@ import bcrypt from "bcryptjs";
 const schoolSchema = new Schema({
     name: { type: String, required: true },
     teachers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Teacher"}],
-    email: { type: String, required: true, unique: true,
+    students: [{ type: mongoose.Schema.Types.ObjectId, ref: "Student"}],
+    email: { type: String, required: true,
         match: [/.+\@.+\..+/, "Please enter a valid email address"]
     },
     admin: { type: mongoose.Schema.Types.ObjectId, ref: "User"},

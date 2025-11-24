@@ -345,3 +345,10 @@ export const deleteSubtopic = async (req: RequestWithUser, res: Response) => {
     }
 };
 
+export const getStatsSchool = async(req: RequestWithUser,res: Response)=>{
+    try {
+        
+    } catch (error) {
+        
+    }
+}

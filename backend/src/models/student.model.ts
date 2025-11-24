@@ -3,12 +3,16 @@ import bcrypt from "bcryptjs";
 
 const studentSchema =  new Schema({
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true,
+    email: { type: String, required: true,
         match: [/.+\@.+\..+/, "Please enter a valid email address"]
     },
     password: { type: String, required: true},
     grade: { type: String, required: true },
-    teacher: { type: mongoose.Schema.Types.ObjectId, ref: "Teacher"}
+    gradeId: { type: mongoose.Schema.Types.ObjectId, ref: "Grade" },
+    section: { type: String },
+    schoolId: { type: mongoose.Schema.Types.ObjectId, ref: "School"},
+    teacher: { type: mongoose.Schema.Types.ObjectId, ref: "Teacher"},
+
 },{timestamps: true})
 
 studentSchema.pre('save',async function(next){
