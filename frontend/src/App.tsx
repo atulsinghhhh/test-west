@@ -4,6 +4,7 @@ import Login from "./pages/Login"
 import AdminPage from "./pages/AdminPage"
 import SchoolPage from "./pages/SchoolPage"
 import TeacherPage from "./pages/TeacherPage"
+import { ProtectedRoute } from "./components/ProtectRoute"
 
 
 function App() {
@@ -12,9 +13,29 @@ function App() {
       <Routes>
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<AdminPage />} />
-        <Route path="/school" element={<SchoolPage />} />
-        <Route path="/teacher" element={<TeacherPage />} />
+        <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminPage />
+              </ProtectedRoute>
+            }
+          />
+        <Route 
+          path="/school/dashboard" 
+          element={
+            <ProtectedRoute allowedRoles={['school']}>
+              <SchoolPage/>
+            </ProtectedRoute>
+        } />
+        <Route 
+          path="/teacher/dashboard" 
+          element={
+            <ProtectedRoute allowedRoles={['teacher']}>
+              <TeacherPage/>
+            </ProtectedRoute>
+        } />
+
       </Routes>
     </div>
   )

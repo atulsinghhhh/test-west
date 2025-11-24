@@ -4,11 +4,10 @@ import bcrypt from "bcryptjs"
 const userSchema = new Schema({
     name: { type: String, required: true},
     username: { type: String, required: true, unique: true },
-    email: { type: String, unique: true, required: true, lowercase: true,
+    email: { type: String, required: true, lowercase: true,
         match: [/.+\@.+\..+/, "Please enter a valid email address"]
     },
     password: { type: String, required: true},
-    // role: { type: String, enum: ['student','teacher','admin'], default: 'admin', required: true },
     school:[{ type: mongoose.Schema.Types.ObjectId, ref: "School"}],
 },{timestamps: true});
 

@@ -14,7 +14,7 @@ const questionSchema = new Schema({
     difficulty: { type: String, enum: ['easy', 'medium', 'hard'], required: true },
     noofQuestions: { type: Number, default: 1 },
     options: [{ type: String }],
-    correctAnswer: { type: String },
+    correctAnswer: { type: [String] },
     aiUsed: { type: Boolean, default: false }
 }, { timestamps: true })
 

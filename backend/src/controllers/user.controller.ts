@@ -99,7 +99,10 @@ export const userLogin = async (req: Request, res: Response) => {
         });
 
 
-        return res.status(200).json({ success: true, message: "Login successful", user });
+        return res.status(200).json({ success: true, message: "Login successful", user:{
+            ...user.toObject ? user.toObject() : user,
+            role: role
+        } });
     } catch (error) {
         console.error("Login error:", error);
         return res.status(500).json({ success: false, message: "Internal server error" });
@@ -154,7 +157,10 @@ export const getProfile = async (req: RequestWithUser, res: Response) => {
             return res.status(404).json({ success: false, message: "Profile not found" });
         }
 
-        res.status(200).json({ success: true, profile });
+        res.status(200).json({ success: true, profile:{
+            ...profile.toObject(),
+            role: req.user?.role
+        } });
     } catch (error) {
         console.error("Error fetching profile:", error);
         res.status(500).json({ success: false, message: "Internal server error" });

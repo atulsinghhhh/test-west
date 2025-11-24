@@ -47,14 +47,11 @@ function Login() {
 
                 setMessage("Login successful!");
 
-                const destination =
-                    user.role === "teacher"
-                        ? "/teacher"
-                        : user.role === "school"
-                            ? "/school"
-                            : "/dashboard";
+                if (res.data.user.role === "admin") navigate("/admin/dashboard");
+                if (res.data.user.role === "school") navigate("/school/dashboard");
+                if (res.data.user.role === "teacher") navigate("/teacher/dashboard");
+                if (res.data.user.role === "student") navigate("/student/dashboard");
 
-                setTimeout(() => navigate(destination), 600);
             }
         } catch (err: any) {
             if (err.response?.data?.message) {

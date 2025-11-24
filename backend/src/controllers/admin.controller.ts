@@ -28,9 +28,22 @@ export const createSchool = async(req: RequestWithUser,res: Response)=>{
         await User.findByIdAndUpdate(adminId,{
             $push: {school: newSchool._id}
         })
-        //  TODO: ADDED FOR REMAINING PAPER AND QUESTION
+        const remainingQuestions = newSchool.questionAdminLimit - newSchool.questionAdminCount;
+        const remainingPapers = newSchool.paperAdminLimit - newSchool.paperAdminCount;
 
-        res.status(200).json({Success: true,message: "successfully created a new school",newSchool});
+        res.status(200).json({Success: true,message: "successfully created a new school",school: {
+            _id: newSchool._id,
+            name: newSchool.name,
+            email: newSchool.email,
+
+            questionLimit: newSchool.questionAdminLimit,
+            paperLimit: newSchool.paperAdminLimit,
+            questionCount: newSchool.questionAdminCount,
+            paperCount: newSchool.paperAdminCount,
+
+            remainingPapers,
+            remainingQuestions
+        }});
     } catch (error) {
         console.log("Error Occuring due to: ",error);
         return res.status(500).json({Success: false,message: "Internal server issue"});
@@ -50,5 +63,68 @@ export const getSchool = async (req: RequestWithUser,res: Response)=>{
     } catch (error) {
         console.log("Error Occuring due to: ",error);
         return res.status(500).json({Success: false,message: "Internal server issue"});
+    }
+}
+
+export const getadminstats = async (req: RequestWithUser,res: Response)=>{
+    try {
+        const adminId = req.user?._id;
+        console.log("adinId: ",adminId);
+
+        const schools = await School.find({ admin: adminId })
+            .select("name email questionAdminLimit paperAdminLimit questionAdminCount paperAdminCount teachers createdAt");
+        if(!schools){
+            return res.status(404).json({success: false, message: "schools are not found"});
+        }
+        console.log("school: ",schools);
+
+        const stats = schools.map(school => {
+            const remainingQuestions = school.questionAdminLimit - school.questionAdminCount;
+            const remainingPapers = school.paperAdminLimit - school.paperAdminCount;
+
+            return {
+                _id: school._id,
+                name: school.name,
+                email: school.email,
+
+                questionLimit: school.questionAdminLimit,
+                paperLimit: school.paperAdminLimit,
+
+                questionCount: school.questionAdminCount,
+                paperCount: school.paperAdminCount,
+
+                remainingQuestions,
+                remainingPapers,
+            };
+        });
+
+        const totalSchools = schools.length;
+        const totalTeachers = schools.reduce((sum, s) => sum + (s.teachers?.length || 0), 0);
+
+        const totalQuestionLimit = schools.reduce((sum, s) => sum + s.questionAdminLimit, 0);
+        const totalQuestionCount = schools.reduce((sum, s) => sum + s.questionAdminCount, 0);
+
+        const totalPaperLimit = schools.reduce((sum, s) => sum + s.paperAdminLimit, 0);
+        const totalPaperCount = schools.reduce((sum, s) => sum + s.paperAdminCount, 0);
+
+        return res.status(200).json({
+            success: true,
+            totalSchools,
+            totalTeachers,
+            totalUsage: {
+                totalQuestionLimit,
+                totalQuestionCount,
+                totalQuestionRemaining: totalQuestionLimit - totalQuestionCount,
+
+                totalPaperLimit,
+                totalPaperCount,
+                totalPaperRemaining: totalPaperLimit - totalPaperCount,
+            },
+            schools: stats
+        });
+
+    } catch (error) {
+        console.error("Error Occurring: ", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 }

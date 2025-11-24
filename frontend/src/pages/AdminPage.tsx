@@ -1,6 +1,7 @@
 import { useState } from "react";
 import CreateSchool from "../components/Admin/CreateSchool";
 import ViewSchool from "../components/Admin/ViewSchool";
+import Stats from "../components/Admin/Stats";
 
 function AdminPage() {
     const [tab, setTab] = useState("create");
@@ -38,6 +39,7 @@ function AdminPage() {
         <div className="flex-1 overflow-y-auto bg-admin-bg">
             {tab === "create" && <CreateSchool />}
             {tab === "view" && <ViewSchool />}
+            {tab === "analytics" && <Stats/>}
         </div>
         </div>
     );
