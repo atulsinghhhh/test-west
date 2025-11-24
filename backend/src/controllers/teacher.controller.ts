@@ -541,5 +541,36 @@ export const downloadPaperPDF = async (req, res) => {
 };
 
 export const downloadQuestionPDF = async (req,res) =>{
-    
+
+}
+
+export const fetchQuestion = async(req,res)=>{
+    try {
+        const teacher = await getTeacherContext(req);
+        const questions = await Question.find({teacherId: teacher._id})
+            .populate("subjectId", "subjectName")
+            .populate("chapterId", "chapterName")
+            .populate("topicId", "topicName")
+            .populate("subTopicId","subtopicName")
+            .sort({ createdAt: -1 });
+
+            res.json({ success: true, questions });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Failed to fetch questions" });
+    }
+}
+
+export const fetchPaper = async(req: RequestWithUser, res: Response)=>{
+    try {
+        const teacher = await getTeacherContext(req);
+        const papers = await Paper.find({ teacherId: teacher._id })
+            .populate("subjectId", "subjectName")
+            .populate("chapterId", "chapterName")
+            .sort({ createdAt: -1 });
+
+        res.json({ success: true, papers });
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Failed to fetch papers" });
+    }
 }
