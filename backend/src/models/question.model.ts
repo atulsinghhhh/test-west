@@ -7,7 +7,8 @@ const questionSchema = new Schema({
     subjectId: { type: mongoose.Schema.Types.ObjectId, ref: "Subject", required: true },
     chapterId: { type: mongoose.Schema.Types.ObjectId, ref: "Chapter", required: true },
     topicId: { type: mongoose.Schema.Types.ObjectId, ref: "Topic", required: true },
-    subtopicId: { type: mongoose.Schema.Types.ObjectId, ref: "Subtopic", required: true },
+    subtopicId: { type: Schema.Types.ObjectId, ref: "Subtopic", required: true },
+    batchId: { type: String, required: true },
 
     questiontext: { type: String, required: true },
     questionType: { type: String, enum: ['short', 'long', 'nat', 'mcq', 'msq'], required: true },

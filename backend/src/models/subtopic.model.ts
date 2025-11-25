@@ -6,4 +6,4 @@ const subtopicSchema = new Schema({
     subtopicName: { type: String, required: true }
 },{timestamps: true})
 
-export const subTopic = mongoose.model("subTopic",subtopicSchema);
+export const Subtopic = mongoose.model("Subtopic", subtopicSchema);

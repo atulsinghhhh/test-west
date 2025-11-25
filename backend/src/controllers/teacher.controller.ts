@@ -6,11 +6,12 @@ import { School } from "../models/School.model.js";
 import { Subject } from "../models/subject.model.js";
 import { Chapter } from "../models/chapter.model.js";
 import { Topic } from "../models/topic.model.js";
-import { subTopic } from "../models/subtopic.model.js";
+import { Subtopic } from "../models/subtopic.model.js";
 import { genAI } from "../lib/ai.js";
 import { ensureTeacherGradeFields } from "../lib/teacherGrade.js";
 import { Paper } from "../models/paper.model.js";
 import { PDFGenerate } from "../lib/pdfgenerate.js";
+import { v4 as uuidv4 } from "uuid";
 
 const getTeacherContext = async (req: RequestWithUser) => {
     const teacherId = req.user?._id;
@@ -167,7 +168,7 @@ export const getTeacherSubtopics = async (req: RequestWithUser, res: Response) =
             return res.status(403).json({ success: false, message: "Topic not part of assigned grade" });
         }
 
-        const subtopics = await subTopic.find({
+        const subtopics = await Subtopic.find({
             topicId,
             schoolId: teacher.school
         }).sort({ subtopicName: 1 });
@@ -184,6 +185,7 @@ export const generateQuestionAI = async (req: RequestWithUser, res: Response) =>
     try {
         const { subjectId, chapterId, topicId, subtopicId, questionType, difficulty, noofQuestions } = req.body;
         const teacher = await getTeacherContext(req);
+        const batchId = uuidv4();
 
         const school = await School.findById(teacher.school);
         if (!school) {
@@ -213,7 +215,7 @@ export const generateQuestionAI = async (req: RequestWithUser, res: Response) =>
             schoolId: teacher.school
         });
 
-        const subtopic = await subTopic.findOne({
+        const subtopic = await Subtopic.findOne({
             _id: subtopicId,
             topicId,
             schoolId: teacher.school
@@ -234,25 +236,28 @@ export const generateQuestionAI = async (req: RequestWithUser, res: Response) =>
         }
 
         const prompt = `Generate ${requestedQuestions} ${difficulty} level ${questionType.toUpperCase()} questions.
-            SYLLABUS CONTEXT: 
-            Grade ID: ${teacher.gradeId}
-            Subject ID: ${subjectId}
-            Chapter ID: ${chapterId}
-            Topic ID: ${topicId}
-            Subtopic ID: ${subtopicId}
 
-            RETURN FORMAT (VERY IMPORTANT):
-            Return ONLY JSON, no explanation.
-            [
-                {
-                    "questionText": "",
-                    "options": ["A","B","C","D"],
-                    "correctAnswer": "",
-                    "difficulty": "${difficulty}",
-                    "type": "${questionType}"
-                }
-            ]
-            `;
+                SYLLABUS CONTEXT: 
+                School: ${school.name}
+                Grade: ${teacher.gradeId}
+                Subject: ${subject.subjectName}
+                Chapter: ${chapter.chapterName}
+                Topic: ${topic.topicName}
+                Subtopic: ${subtopic.subtopicName}
+
+                RETURN FORMAT (VERY IMPORTANT):
+                Return ONLY JSON, no explanation.
+                [
+                    {
+                        "questionText": "",
+                        "options": ["A","B","C","D"],
+                        "correctAnswer": "",
+                        "difficulty": "${difficulty}",
+                        "type": "${questionType}"
+                    }
+                ]
+                `;
+
 
         let result;
         try {
@@ -286,7 +291,6 @@ export const generateQuestionAI = async (req: RequestWithUser, res: Response) =>
         } catch (e) {
             return res.status(500).json({ success: false, message: "Failed to parse AI response", raw: text });
         }
-
         const savedQuestions = [];
 
         for (let q of generatedQuestions) {
@@ -307,6 +311,7 @@ export const generateQuestionAI = async (req: RequestWithUser, res: Response) =>
                 chapterId,
                 topicId,
                 subtopicId,
+                batchId,
                 questiontext: cleanedQuestion,
                 questionType: finalType,
                 difficulty: normalizedDifficulty || "medium",
@@ -332,6 +337,7 @@ export const generateQuestionAI = async (req: RequestWithUser, res: Response) =>
             message: "AI Questions generated successfully",
             questions: savedQuestions,
             teacherRemainingLimit: updatedTeacherRemaining,
+            batchId: batchId,
             teacherQuestionUsed: teacher.questionSchoolCount,
             schoolRemainingLimit: updatedSchoolRemaining,
             schoolQuestionUsed: school.questionAdminCount
@@ -532,7 +538,7 @@ export const downloadPaperPDF = async (req, res) => {
             ${paper.paperContent}
             `;
 
-        const { filePath, fileName } = await PDFGenerate(content, "Question_Paper");
+        const { filePath, fileName } = await PDFGenerate(content, "Paper");
 
         res.download(filePath, fileName);
     } catch (error) {
@@ -540,11 +546,93 @@ export const downloadPaperPDF = async (req, res) => {
     }
 };
 
-export const downloadQuestionPDF = async (req,res) =>{
+export const downloadQuestionPDF = async (req: RequestWithUser, res: Response) => {
+    try {
+        const { batchId } = req.params;
 
-}
+        console.log("Request batchId:", batchId);
 
-export const fetchQuestion = async(req,res)=>{
+        const questions = await Question.find({ batchId })
+            .populate("schoolId")
+            .populate("teacherId")
+            .populate("gradeId")
+            .populate("subjectId")
+            .populate("chapterId")
+            .populate("topicId")
+            .populate("subtopicId");
+
+        if (!questions || questions.length === 0) {
+            return res.status(404).json({ success: false, message: "No questions found for this batch" });
+        }
+
+        const firstQ = questions[0];
+
+        const school = firstQ.schoolId as any;
+        const teacher = firstQ.teacherId as any;
+        const grade = firstQ.gradeId as any;
+        const subject = firstQ.subjectId as any;
+        const chapter = firstQ.chapterId as any;
+        const topic = firstQ.topicId as any;
+        const subtopic = firstQ.subtopicId as any;
+
+        let content = `
+==========================================
+            QUESTION PAPER
+==========================================
+
+School: ${school.name}
+Teacher: ${teacher.name}
+Grade: ${grade.gradeName}
+Subject: ${subject.subjectName}
+Chapter: ${chapter.chapterName}
+Topic: ${topic.topicName}
+Subtopic: ${subtopic?.subtopicName || "N/A"}
+
+==========================================
+`;
+
+        questions.forEach((q: any, index: number) => {
+
+            content += `
+------------------------------------------
+Q${index + 1}: ${q.questiontext}
+
+Difficulty: ${q.difficulty.toUpperCase()}
+Type: ${q.questionType.toUpperCase()}
+------------------------------------------
+`;
+
+            if (q.options?.length > 0) {
+                q.options.forEach((opt: string, idx: number) => {
+                    content += `${idx + 1}. ${opt}\n`;
+                });
+
+                content += `Correct Answer: ${q.correctAnswer}\n`;
+            } else {
+                content += `Subjective Type (No Options)\n`;
+            }
+
+            content += `\n`;
+        });
+
+        const { filePath, fileName } = await PDFGenerate(content, `QuestionBatch_${batchId}`);
+
+        console.log("PDF generated at:", filePath);
+
+        return res.download(filePath, fileName);
+
+    } catch (error: any) {
+        console.log("Error Occurring: ", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error generating PDF",
+            error: error instanceof Error ? error.message : error
+        });
+    }
+};
+
+
+export const fetchQuestion = async(req: RequestWithUser,res: Response)=>{
     try {
         const teacher = await getTeacherContext(req);
         const questions = await Question.find({teacherId: teacher._id})

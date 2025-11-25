@@ -6,7 +6,7 @@ import { Grade } from "../models/grade.model.js";
 import { Chapter } from "../models/chapter.model.js";
 import { Subject } from "../models/subject.model.js";
 import { Topic } from "../models/topic.model.js"
-import { subTopic } from "../models/subtopic.model.js";
+import { Subtopic } from "../models/subtopic.model.js";
 
 
 export const addTeachers = async (req: RequestWithUser, res: Response) => {
@@ -287,7 +287,7 @@ export const addSubtopic = async (req: RequestWithUser, res: Response) => {
         const { subtopicName } = req.body;
         const schoolId = req.user?._id;
 
-        const newSubtopic = await subTopic.create({
+        const newSubtopic = await Subtopic.create({
             schoolId: schoolId,
             topicId: topicId,
             subtopicName
@@ -310,7 +310,7 @@ export const getSubtopics = async (req: RequestWithUser, res: Response) => {
         const { topicId } = req.params;
         const schoolId = req.user?._id;
 
-        const subtopics = await subTopic.find({ topicId, schoolId });
+        const subtopics = await Subtopic.find({ topicId, schoolId });
 
         if (!subtopics) {
             return res.status(400).json({ success: false, message: "Failed to fetch subtopics" });
@@ -330,12 +330,12 @@ export const deleteSubtopic = async (req: RequestWithUser, res: Response) => {
         const { subtopicId } = req.params;
         const schoolId = req.user?._id;
 
-        const subtopic = await subTopic.findOne({ _id: subtopicId, schoolId });
+        const subtopic = await Subtopic.findOne({ _id: subtopicId, schoolId });
         if (!subtopic) {
             return res.status(404).json({ success: false, message: "Subtopic not found or unauthorized" });
         }
 
-        await subTopic.deleteOne({ _id: subtopicId });
+        await Subtopic.deleteOne({ _id: subtopicId });
 
         return res.status(200).json({ success: true, message: "Subtopic deleted successfully" });
 

@@ -74,6 +74,7 @@ export default function Question() {
     const [filterBy, setFilterBy] = useState("subject");
 
     const [generatedQuestions, setGeneratedQuestions] = useState<GeneratedQuestion[]>([]);
+    const [batchId, setBatchId ] = useState();
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
@@ -213,6 +214,7 @@ export default function Question() {
 
             setGeneratedQuestions(response.data.questions || []);
             setMessage(response.data.message || "Questions generated");
+            setBatchId(response.data.batchId);
 
             setGradeInfo((prev) => {
                 if (!prev) return prev;
@@ -232,6 +234,26 @@ export default function Question() {
             setLoading(false);
         }
     };
+
+    const handleDownload = async () => {
+        if (!batchId) {
+            alert("No batchId available!");
+            return;
+        }
+
+        const url = `${baseurl}/teacher/question/download/${batchId}`;
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `Questions_${batchId}.pdf`);
+        link.target = "_blank";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+
+
 
     const gradeLabel = gradeInfo?.gradeName || user?.gradeName || user?.grade || "N/A";
     
@@ -380,15 +402,32 @@ export default function Question() {
                         </div>
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-[#7c3aed] text-white py-3 rounded-lg font-semibold shadow hover:bg-[#6d28d9] transition disabled:opacity-40"
-                    >
-                        {loading ? "Generating..." : "Generate Questions"}
-                    </button>
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-[#7c3aed] text-white py-3 rounded-lg font-semibold shadow 
+                                    hover:bg-[#6d28d9] transition disabled:opacity-40"
+                        >
+                            {loading ? "Generating..." : "Generate Questions"}
+                        </button>
+
+                        <button
+                            onClick={handleDownload}
+                            className="w-full bg-[#7c3aed] text-white py-3 rounded-lg font-semibold shadow 
+                                    hover:bg-[#6d28d9] transition"
+                        >
+                            Download PDF
+                        </button>
+                    </div>
                 </form>
+
             </section>
+
+
+
+
         </div>
     );
 }
