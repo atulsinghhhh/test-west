@@ -501,22 +501,6 @@ Type: ${q.questionType.toUpperCase()}
     }
 };
 
-export const fetchQuestion = async(req: RequestWithUser,res: Response)=>{
-    try {
-        const teacher = await getTeacherContext(req);
-        const questions = await Question.find({teacherId: teacher._id})
-            .populate("subjectId", "subjectName")
-            .populate("chapterId", "chapterName")
-            .populate("topicId", "topicName")
-            .populate("subTopicId","subtopicName")
-            .sort({ createdAt: -1 });
-
-            res.json({ success: true, questions });
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Failed to fetch questions" });
-    }
-}
-
 export const generatepaperAI = async (req: RequestWithUser, res: Response) => {
     try {
         const {
@@ -689,22 +673,21 @@ Now generate the question paper.
     }
 };
 
-
 export const downloadPaperPDF = async (req, res) => {
     try {
         const { paperId } = req.params;
         console.log("Downloading paper with ID:", paperId);
 
         const paper = await Paper.find({ paperId })
-        .populate("schoolId")
-        .populate("teacherId")
-        .populate("subjectId")
-        .populate("chapterId");
+            .populate("schoolId")
+            .populate("teacherId")
+            .populate("subjectId")
+            .populate("chapterId");
 
         if (!paper) {
-        return res
-            .status(404)
-            .json({ success: false, message: "Paper not found" });
+            return res
+                .status(404)
+                .json({ success: false, message: "Paper not found" });
         }
 
         const firstP = paper[0];
@@ -738,22 +721,142 @@ export const downloadPaperPDF = async (req, res) => {
     } catch (error) {
         console.error(error);
         res
-        .status(500)
-        .json({ success: false, message: "Error generating PDF", error });
+            .status(500)
+            .json({ success: false, message: "Error generating PDF", error });
     }
 };
 
-export const fetchPaper = async(req: RequestWithUser, res: Response)=>{
+export const publishedQuestions = async (req: RequestWithUser, res: Response) => {
     try {
+        const { batchId } = req.params;
+        console.log("Publish batchId", batchId); 
         const teacher = await getTeacherContext(req);
-        const papers = await Paper.find({ teacherId: teacher._id })
-            .populate("subjectId", "subjectName")
-            .populate("chapterId", "chapterName")
-            .sort({ createdAt: -1 });
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        // console.log("teacher Publish", teacher);
 
-        res.json({ success: true, papers });
+        const questions = await Question.find({ batchId, aiUsed: true });
+        if (questions.length === 0) {
+            return res.status(404).json({ success: false, message: "No questions found for this batch" });
+        }
+        const publishedQuestion = await Question.updateMany({ batchId, aiUsed: true }, { isPublish: true });
+        return res.status(200).json({ success: true, message: "Questions published successfully", publishedCount: publishedQuestion.modifiedCount });
+    } catch (error) {
+        console.log("Error publishing questions:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
+
+
+export const fetchQuestions = async (req: RequestWithUser, res: Response) => {
+    try {
+        const { batchId } = req.params;
+        console.log("batchId", batchId);    
+        const teacher = await getTeacherContext(req);
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        console.log("teacher", teacher);
+
+        const matchStage: any = { teacherId: teacher._id };
+        if (batchId) {
+            matchStage.batchId = batchId;
+        }
+
+        const questions = await Question.aggregate([
+            { $match: matchStage },
+            {
+                $group: {
+                    _id: "$batchId",
+                    batchId: { $first: "$batchId" },
+                    questionType: { $first: "$questionType" },
+                    difficulty: { $first: "$difficulty" },
+                    isPublish: { $first: "$isPublish" },
+                    createdAt: { $first: "$createdAt" },
+                    noofQuestion: { $sum: 1 }
+                }
+            },
+            { $sort: { createdAt: -1 } }
+        ]);
+
+        if (questions.length === 0) {
+             return res.status(200).json({ success: true, questions: [] });
+        }
+
+        return res.status(200).json({ success: true, questions });
+    } catch (error) {
+        console.log("Error fetching questions:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
+
+export const fetchPapers = async (req: RequestWithUser, res: Response) => {
+    try {
+        const { paperId } = req.params;
+        const teacher = await getTeacherContext(req);
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+
+        if (paperId) {
+            console.log("Fetching paper with ID:", paperId);
+            const paper = await Paper.findOne({ paperId, teacherId: teacher._id });
+            if (!paper) {
+                return res.status(404).json({ success: false, message: "No paper found for this ID" });
+            }
+
+            return res.status(200).json({
+                success: true, papers: {
+                    paperId: paper.paperId,
+                    testType: paper.testType,
+                    paperType: paper.paperType,
+                    totalQuestion: paper.totalQuestion,
+                    totalMarks: paper.totalMarks,
+                    publishStatus: paper.publishStatus || false // Ensure publishStatus is returned
+                }
+            });
+        } else {
+            console.log("Fetching all papers for teacher:", teacher._id);
+            const papers = await Paper.find({ teacherId: teacher._id }).sort({ createdAt: -1 });
+
+            const formattedPapers = papers.map(paper => ({
+                paperId: paper.paperId,
+                testType: paper.testType,
+                paperType: paper.paperType,
+                totalQuestion: paper.totalQuestion,
+                totalMarks: paper.totalMarks,
+                publishStatus: paper.publishStatus || false
+            }));
+
+            return res.status(200).json({ success: true, papers: formattedPapers });
+        }
 
     } catch (error) {
-        res.status(500).json({ success: false, message: "Failed to fetch papers" });
+        console.log("Error fetching paper:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
+
+export const publishPaper = async (req: RequestWithUser, res: Response) => {
+    try {
+        const { paperId } = req.params;
+        const teacher = await getTeacherContext(req);
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+
+        const paper = await Paper.findOne({ paperId, teacherId: teacher._id });
+        if (!paper) {
+            return res.status(404).json({ success: false, message: "No paper found for this ID" });
+        }
+
+        paper.publishStatus = true;
+        await paper.save();
+
+        return res.status(200).json({ success: true, message: "Paper published successfully", paper });
+    } catch (error) {
+        console.log("Error publishing paper:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 }

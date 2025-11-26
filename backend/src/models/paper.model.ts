@@ -13,7 +13,8 @@ const paperSchema = new Schema({
     subjectId: { type: mongoose.Schema.Types.ObjectId, ref: "Subject", required: true },
     chapterId: { type: mongoose.Schema.Types.ObjectId, ref: "Chapter", required: true },
     paperId: { type: String, required: true },
-    paperContent: { type: String, required: true}
+    paperContent: { type: String, required: true},
+    publishStatus: { type: Boolean, default: false },
 },{timestamps: true});
 
 export const Paper = mongoose.model("Paper",paperSchema);

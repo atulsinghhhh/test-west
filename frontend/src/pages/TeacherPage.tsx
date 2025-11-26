@@ -2,6 +2,8 @@ import { useState } from "react"
 import Question from "../components/teacher/Question";
 import RemainingQuota from "../components/teacher/RemainingQuota";
 import PaperGenerator from "../components/teacher/PaperGenerator";
+// import TeacherAnalytics from "../components/teacher/TeacherAnalytics";
+import QuestionPublish from "../components/teacher/TeacherAnalytics";
 
 
 function TeacherPage() {
@@ -36,14 +38,16 @@ function TeacherPage() {
                     Paper 
                 </button>
 
-                <button className={tabStyle("Remaining")} onClick={() => setTab("Remaining")}>
-                    Remaining Quota
+                <button className={tabStyle("publish")} onClick={() => setTab("publish")}>
+                    Publish
                 </button>
             </div>
 
             <div className="flex-1 overflow-y-auto bg-admin-bg">
                 { tab === "questions" && <Question/>}
                 { tab === "papers" && <PaperGenerator/>}
+                { tab === "publish" && <QuestionPublish/> }
+
             </div>
         </div>
     )
