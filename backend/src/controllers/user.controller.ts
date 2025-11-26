@@ -5,6 +5,7 @@ import type { Request, Response } from "express";
 import { School } from "../models/School.model.js";
 import { Teacher } from "../models/teacher.model.js";
 import { ensureTeacherGradeFields } from "../lib/teacherGrade.js";
+import { Student } from "../models/student.model.js";
 
 export interface IUserPayload {
     _id: string;
@@ -71,6 +72,12 @@ export const userLogin = async (req: Request, res: Response) => {
             user = await Teacher.findOne({ email });
             if (user) {
                 role = 'teacher'
+            }
+        }
+        if(!user){
+            user = await Student.findOne({ email });
+            if(user){
+                role = 'student'
             }
         }
 
@@ -149,9 +156,9 @@ export const getProfile = async (req: RequestWithUser, res: Response) => {
             }
         }
 
-        // if(role === "student") {
-        //     profile = await School.findById(userId).select("-password");
-        // }
+        if(role === "student") {
+            profile = await Student.findById(userId).select("-password");
+        }
 
         if (!profile) {
             return res.status(404).json({ success: false, message: "Profile not found" });

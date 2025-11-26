@@ -11,7 +11,7 @@ const studentSchema =  new Schema({
     gradeId: { type: mongoose.Schema.Types.ObjectId, ref: "Grade" },
     section: { type: String },
     schoolId: { type: mongoose.Schema.Types.ObjectId, ref: "School"},
-    teacher: { type: mongoose.Schema.Types.ObjectId, ref: "Teacher"},
+    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: "Teacher"},
 
 },{timestamps: true})
 
