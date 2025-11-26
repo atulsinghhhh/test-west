@@ -1,5 +1,6 @@
 import mongoose,{ Schema } from "mongoose";
 
+
 const paperSchema = new Schema({
     duration: { type: Number, required: true},
     totalQuestion: { type: Number, required: true},
@@ -11,6 +12,7 @@ const paperSchema = new Schema({
     schoolId: { type: mongoose.Schema.Types.ObjectId, ref: "School"},
     subjectId: { type: mongoose.Schema.Types.ObjectId, ref: "Subject", required: true },
     chapterId: { type: mongoose.Schema.Types.ObjectId, ref: "Chapter", required: true },
+    paperId: { type: String, required: true },
     paperContent: { type: String, required: true}
 },{timestamps: true});
 

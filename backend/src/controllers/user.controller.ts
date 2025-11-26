@@ -89,7 +89,7 @@ export const userLogin = async (req: Request, res: Response) => {
         }
 
         const token = jwt.sign({ id: user._id, email: user.email, role: role }, process.env.JWT_SECRET!, { expiresIn: "7d" });
-        console.log("Token is generated: ", token);
+        // console.log("Token is generated: ", token);
 
         res.cookie("token", token, {
             httpOnly: true,

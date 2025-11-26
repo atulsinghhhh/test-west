@@ -16,7 +16,8 @@ const questionSchema = new Schema({
     noofQuestions: { type: Number, default: 1 },
     options: [{ type: String }],
     correctAnswer: { type: [String] },
-    aiUsed: { type: Boolean, default: false }
+    aiUsed: { type: Boolean, default: false },
+    isPublish: { type: Boolean, default: false },
 }, { timestamps: true })
 
 export const Question = mongoose.model("Question", questionSchema);

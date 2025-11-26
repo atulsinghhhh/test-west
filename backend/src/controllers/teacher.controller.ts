@@ -13,6 +13,50 @@ import { Paper } from "../models/paper.model.js";
 import { PDFGenerate } from "../lib/pdfgenerate.js";
 import { v4 as uuidv4 } from "uuid";
 
+export const getTeacherQuota = async (req: RequestWithUser, res: Response) => {
+    try {
+        const teacherId = req.user?._id;
+
+        if (!teacherId) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized: Teacher not logged in"
+            });
+        }
+        const teacher = await Teacher.findById(teacherId);
+
+        if (!teacher) {
+            return res.status(404).json({
+                success: false,
+                message: "Teacher not found"
+            });
+        }
+
+        const remainingQuestions = teacher.questionSchoolLimit - teacher.questionSchoolCount;
+        const remainingPapers = teacher.paperSchoolLimit - teacher.paperSchoolCount;
+
+        return res.status(200).json({
+            success: true,
+            quota: {
+                questionLimit: teacher.questionSchoolLimit,
+                questionCount: teacher.questionSchoolCount,
+                remainingQuestions,
+
+                paperLimit: teacher.paperSchoolLimit,
+                paperCount: teacher.paperSchoolCount,
+                remainingPapers
+            }
+        });
+
+    } catch (error) {
+        console.error("Error fetching teacher quota:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+};
+
 const getTeacherContext = async (req: RequestWithUser) => {
     const teacherId = req.user?._id;
     if (req.user?.role !== "teacher") {
@@ -180,6 +224,30 @@ export const getTeacherSubtopics = async (req: RequestWithUser, res: Response) =
     }
 };
 
+export const fetchTeacherSchool = async (req: RequestWithUser, res: Response) => {
+    try {
+        const teacher = await Teacher.findById(req.user?._id).populate("school") as any;
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+
+        return res.status(200).json({
+            success: true,
+            teacher: {
+                name: teacher.name,
+                school: {
+                    _id: teacher.school._id,
+                    name: teacher.school.name
+                }
+            }
+        });
+
+
+    } catch (error) {
+        console.log("Error fetching teacher school:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
 
 export const generateQuestionAI = async (req: RequestWithUser, res: Response) => {
     try {
@@ -348,204 +416,6 @@ export const generateQuestionAI = async (req: RequestWithUser, res: Response) =>
     }
 }
 
-export const generatepaperAI = async(req: RequestWithUser,res: Response)=>{
-    try {
-        const {duration, totalMarks,totalQuestion,Instructions,paperType,testType,subjectId,chapterId} = req.body;
-        const teacher = await getTeacherContext(req);
-    
-        const school = await School.findById(teacher.school);
-        if (!school) {
-            return res.status(404).json({ success: false, message: "School not found" });
-        }
-    
-    
-        const requestedQuestions = Number(totalQuestion);
-            if (!requestedQuestions || requestedQuestions <= 0) {
-                return res.status(400).json({ success: false, message: "Invalid question count" });
-            }
-    
-        const subject = await Subject.findOne({
-            _id: subjectId,
-            gradeId: teacher.gradeId,
-            schoolId: teacher.school
-        });
-        const chapter =  await Chapter.findOne({
-            _id: chapterId,
-            subjectId,
-            schoolId: teacher.school
-        })
-    
-        if (!subject || !chapter) {
-            return res.status(400).json({ success: false, message: "Invalid syllabus structure" });
-        }
-    
-        const teacherRemaining = teacher.paperSchoolLimit - teacher.paperSchoolCount;
-        if (teacherRemaining < requestedQuestions) {
-            return res.status(400).json({ success: false, message: "Teacher question limit exceeded" });
-        }
-    
-        const schoolRemaining = school.paperAdminLimit - school.paperAdminCount;
-        if (schoolRemaining < requestedQuestions) {
-            return res.status(400).json({ success: false, message: "School question limit exceeded" });
-        }
-    
-        const prompt = `
-            You are an expert question-paper generator for schools. 
-            Generate a structured exam paper based on the following details:
-    
-            - Duration: {{duration}} minutes
-            - Total Marks: {{totalMarks}}
-            - Total Questions: {{totalQuestion}}
-            - Instructions: {{instructions}}
-            - Paper Type: {{paperType}} (e.g., Objective, Subjective, Mixed)
-            - Test Type: {{testType}} (e.g., Unit Test, Mid Term, Half Yearly)
-            - Subject ID: {{subjectId}}
-            - Chapter ID: {{chapterId}}
-    
-            Rules:
-            1. Create questions only from the given chapterId.
-            2. Ensure the total number of questions matches {{totalQuestion}}.
-            3. Ensure the total marks exactly sum to {{totalMarks}}.
-            4. Add a proper heading:
-            - School Name (Placeholder)
-            - Exam Name (testType)
-            - Subject Name (based on subjectId)
-            - Paper Type
-            - Duration & Total Marks
-            5. Provide the question paper in a clean, structured format:
-            - Section A: Easy
-            - Section B: Medium
-            - Section C: Hard
-            (Automatically distribute marks based on difficulty)
-            6. For MCQs: give 4 options.
-            7. For subjective: give short & long answer questions depending on marks.
-            8. DO NOT create answers unless asked. Only generate the question paper.
-    
-            Output Format:
-            """
-            [EXAM TITLE]
-    
-            Instructions:
-            {{instructions}}
-    
-            Duration: {{duration}} minutes
-            Total Marks: {{totalMarks}}
-    
-            SECTION A (Easy)
-            Q1. ...
-            Q2. ...
-    
-            SECTION B (Medium)
-            Q...
-    
-            SECTION C (Hard)
-            Q...
-    
-            """
-    
-            Now generate the complete question paper based on the given parameters.
-        `
-    
-        let result;
-        try {
-            result = await genAI.models.generateContent({
-                model: "gemini-2.0-flash",
-                contents: [{ parts: [{ text: prompt }] }],
-            });
-        } catch (apiError) {
-            const statusCode = (apiError as any)?.status || (apiError as any)?.response?.status;
-            const apiMessage =
-                (apiError as any)?.error?.message ||
-                (apiError as any)?.message ||
-                "AI service error";
-    
-            if (statusCode === 429 || (apiError as any)?.error?.status === "RESOURCE_EXHAUSTED") {
-                return res.status(429).json({
-                    success: false,
-                    message: apiMessage || "AI usage limit reached. Please try again later.",
-                });
-            }
-    
-            throw apiError;
-        }
-    
-        let text = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
-        text = text.replace(/```json|```/g, "").trim();
-    
-        const paperText = text;
-
-        const paper = await Paper.create({
-            teacherId: teacher._id,
-            schoolId: teacher.school,
-            duration,
-            totalMarks,
-            totalQuestion,
-            Instructions,
-            paperType,
-            testType,
-
-            subjectId,
-            chapterId,
-            paperContent: paperText,
-        });
-
-        teacher.paperSchoolCount+=requestedQuestions;
-        await teacher.save();
-
-        school.paperAdminCount+=requestedQuestions;
-        await school.save();
-
-        const updatedTeacherRemaining = Math.max(teacher.paperSchoolLimit - teacher.paperSchoolCount, 0);
-        const updatedSchoolRemaining = Math.max(school.paperAdminLimit - school.paperAdminCount, 0);
-
-        return res.status(200).json({
-            success: true,
-            message: "AI Papers generated successfully",
-            paper,
-            teacherRemainingLimit: updatedTeacherRemaining,
-            teacherPaperUsed: teacher.paperSchoolCount,
-            schoolRemainingLimit: updatedSchoolRemaining,
-            schoolpaperUsed: school.paperAdminCount
-        });
-    } catch (error) {
-        console.error("AI Paper Error:", error);
-        return res.status(500).json({ success: false, message: "Internal server error" });
-    }
-
-}
-
-export const downloadPaperPDF = async (req, res) => {
-    try {
-        const { paperId } = req.params;
-
-        const paper = await Paper.findById(paperId);
-        if (!paper) {
-            return res.status(404).json({ success: false, message: "Paper not found" });
-        }
-
-        const content = `
-            Exam Type: ${paper.testType}
-            Paper Type: ${paper.paperType}
-            Duration: ${paper.duration} mins
-            Total Marks: ${paper.totalMarks}
-            Total Questions: ${paper.totalQuestion}
-
-            Instructions:
-            ${paper.Instructions}
-
-            -----------------------
-
-            ${paper.paperContent}
-            `;
-
-        const { filePath, fileName } = await PDFGenerate(content, "Paper");
-
-        res.download(filePath, fileName);
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Error generating PDF", error });
-    }
-};
-
 export const downloadQuestionPDF = async (req: RequestWithUser, res: Response) => {
     try {
         const { batchId } = req.params;
@@ -631,7 +501,6 @@ Type: ${q.questionType.toUpperCase()}
     }
 };
 
-
 export const fetchQuestion = async(req: RequestWithUser,res: Response)=>{
     try {
         const teacher = await getTeacherContext(req);
@@ -647,6 +516,232 @@ export const fetchQuestion = async(req: RequestWithUser,res: Response)=>{
         res.status(500).json({ success: false, message: "Failed to fetch questions" });
     }
 }
+
+export const generatepaperAI = async (req: RequestWithUser, res: Response) => {
+    try {
+        const {
+            duration,
+            totalMarks,
+            totalQuestion,
+            Instructions,
+            paperType,
+            testType,
+            subjectId,
+            chapterId
+        } = req.body;
+
+        const teacher = await getTeacherContext(req);
+        const paperId = uuidv4();
+
+        const school = await School.findById(teacher.school);
+        if (!school) {
+            return res.status(404).json({ success: false, message: "School not found" });
+        }
+        console.log("School Name:", school.name);
+        /** ------------------- VALIDATION ------------------- **/
+        const requestedQuestions = Number(totalQuestion);
+        if (!requestedQuestions || requestedQuestions <= 0) {
+            return res.status(400).json({ success: false, message: "Invalid question count" });
+        }
+
+        const subject = await Subject.findOne({
+            _id: subjectId,
+            gradeId: teacher.gradeId,
+            schoolId: teacher.school
+        });
+
+        const chapter = await Chapter.findOne({
+            _id: chapterId,
+            subjectId,
+            schoolId: teacher.school
+        });
+
+        if (!subject || !chapter) {
+            return res.status(400).json({ success: false, message: "Invalid syllabus structure" });
+        }
+
+        /** ------------------- LIMIT VALIDATION ------------------- **/
+        const teacherRemaining = teacher.paperSchoolLimit - teacher.paperSchoolCount;
+        const schoolRemaining = school.paperAdminLimit - school.paperAdminCount;
+
+        if (teacherRemaining < requestedQuestions) {
+            return res.status(400).json({
+                success: false,
+                message: `Teacher limit exceeded. Remaining: ${teacherRemaining}`
+            });
+        }
+
+        if (schoolRemaining < requestedQuestions) {
+            return res.status(400).json({
+                success: false,
+                message: `School limit exceeded. Remaining: ${schoolRemaining}`
+            });
+        }
+
+        /** ------------------- AI Prompt ------------------- **/
+        const prompt = `
+You are an expert question-paper generator for schools.
+
+Generate a structured exam paper based on:
+
+- Duration: ${duration} minutes
+- Total Marks: ${totalMarks}
+- Total Questions: ${totalQuestion}
+- Instructions: ${Instructions}
+- Paper Type: ${paperType}
+- Test Type: ${testType}
+- Subject Name: ${subject.subjectName}
+- Chapter Name: ${chapter.chapterName}
+
+Rules:
+1. Use ONLY the given chapter.
+2. Match EXACT total questions = ${totalQuestion}.
+3. Match EXACT total marks = ${totalMarks}.
+4. Add heading:
+   - School Name: ${school.name}
+   - Exam Name: ${testType}
+   - Subject: ${subject.subjectName}
+   - Paper Type
+   - Duration & Total Marks
+5. Format:
+   SECTION A (Easy)
+   SECTION B (Medium)
+   SECTION C (Hard)
+6. Provide clean text. NO answers.
+
+Now generate the question paper.
+`;
+
+        let result;
+        try {
+            result = await genAI.models.generateContent({
+                model: "gemini-2.0-flash",
+                contents: [{ parts: [{ text: prompt }] }],
+            });
+        } catch (apiError: any) {
+            const statusCode = apiError?.status || apiError?.response?.status;
+            const apiMessage =
+                apiError?.error?.message || apiError?.message || "AI service error";
+
+            if (statusCode === 429 || apiError?.error?.status === "RESOURCE_EXHAUSTED") {
+                return res.status(429).json({
+                    success: false,
+                    message: apiMessage || "AI usage limit reached. Try later.",
+                });
+            }
+
+            throw apiError;
+        }
+
+        let text = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        text = text.replace(/```json|```/g, "").trim();
+
+        /** ------------------- SAVE PAPER ------------------- **/
+        const paper = await Paper.create({
+            teacherId: teacher._id,
+            schoolId: school._id,
+            duration,
+            totalMarks,
+            totalQuestion,
+            Instructions,
+            paperType,
+            testType,
+            paperId,
+            subjectId,
+            chapterId,
+            paperContent: text,
+        });
+
+        /** ------------------- UPDATE LIMITS ------------------- **/
+        teacher.paperSchoolCount += requestedQuestions;
+        await teacher.save();
+
+        school.paperAdminCount += requestedQuestions;
+        await school.save();
+
+        const teacherRemainingAfter = Math.max(
+            teacher.paperSchoolLimit - teacher.paperSchoolCount,
+            0
+        );
+
+        const schoolRemainingAfter = Math.max(
+            school.paperAdminLimit - school.paperAdminCount,
+            0
+        );
+
+        /** ------------------- RESPONSE ------------------- **/
+        return res.status(200).json({
+            success: true,
+            message: "AI Paper generated successfully",
+            paper,
+            paperId,
+            schoolId: {
+                _id: school._id,
+                name: school.name
+            },
+            teacherRemainingLimit: teacherRemainingAfter,
+            schoolRemainingLimit: schoolRemainingAfter
+        });
+
+    } catch (error) {
+        console.error("AI Paper Error:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+
+export const downloadPaperPDF = async (req, res) => {
+    try {
+        const { paperId } = req.params;
+        console.log("Downloading paper with ID:", paperId);
+
+        const paper = await Paper.find({ paperId })
+        .populate("schoolId")
+        .populate("teacherId")
+        .populate("subjectId")
+        .populate("chapterId");
+
+        if (!paper) {
+        return res
+            .status(404)
+            .json({ success: false, message: "Paper not found" });
+        }
+
+        const firstP = paper[0];
+        const subject = firstP.subjectId as any;
+        const chapter = firstP.chapterId as any;
+        const school = firstP.schoolId as any;
+
+        const content = `
+    Exam Type: ${firstP.testType}
+    Paper Type: ${firstP.paperType}
+    Duration: ${firstP.duration} mins
+    Total Marks: ${firstP.totalMarks}
+    Total Questions: ${firstP.totalQuestion}
+
+    Instructions:
+    ${firstP.Instructions}
+
+    -----------------------
+
+    Subject: ${subject.subjectName}
+    Chapter: ${chapter.chapterName}
+    School: ${school?.name || "N/A"}
+
+    -----------------------
+
+    ${firstP.paperContent}
+    `;
+        const { filePath, fileName } = await PDFGenerate(content, `Paper_${paperId}`);
+
+        return res.download(filePath, fileName);
+    } catch (error) {
+        console.error(error);
+        res
+        .status(500)
+        .json({ success: false, message: "Error generating PDF", error });
+    }
+};
 
 export const fetchPaper = async(req: RequestWithUser, res: Response)=>{
     try {

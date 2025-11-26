@@ -69,7 +69,6 @@ export const getSchool = async (req: RequestWithUser,res: Response)=>{
 export const getadminstats = async (req: RequestWithUser,res: Response)=>{
     try {
         const adminId = req.user?._id;
-        console.log("adinId: ",adminId);
 
         const schools = await School.find({ admin: adminId })
             .select("name email questionAdminLimit paperAdminLimit questionAdminCount paperAdminCount teachers createdAt");
