@@ -2,11 +2,13 @@ import { useState } from "react";
 import CreateTeacher from "../components/school/CreateTeacher";
 import ViewTeacher from "../components/school/ViewTeacher";
 import ManageSubject from "../components/school/ManageSubject";
-// import ManageSubject from "../components/school/ManageSubject";
+import { useNavigate } from "react-router-dom";
+
 
 
 function SchoolPage() {
     const [tab, setTab] = useState("create");
+    const navigate = useNavigate();
     
     const tabStyle = (name: any) =>
         `w-full text-center py-4 px-6 font-medium transition-all duration-200
@@ -26,6 +28,7 @@ function SchoolPage() {
                 <p className="text-sm text-muted-foreground">
                     Manage Teacher, Manage Subject and view analytics
                 </p>
+                <button onClick={()=>navigate('/school/create/')}>Create</button>
             </div>
 
             <div className="grid grid-cols-4 border-b border-admin-border bg-admin-panel">

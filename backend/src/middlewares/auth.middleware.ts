@@ -47,6 +47,7 @@ export const verifyJwt = async (req: RequestWithUser, res: Response, next: NextF
         if (!user) {
             return res.status(401).json({ success: false, message: "User not found" });
         }
+        console.log("logged User: ",user);
 
         req.user = {
             _id: user._id.toString(),

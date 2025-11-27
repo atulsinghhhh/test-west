@@ -34,7 +34,7 @@ export const studentCreatedBySchool = async(req: RequestWithUser, res: Response)
         }
 
         await School.findByIdAndUpdate(schoolId, {
-            $push: { teachers: newStudent._id }
+            $push: { students: newStudent._id }
         })
         
         res.status(200).json({success: true,message: "successfully created a new student"})
@@ -108,19 +108,28 @@ export const fetchStudentsForTeacher = async (req: RequestWithUser, res: Respons
     }
 };
 
-
 export const fetchPublishedPapers = async (req: RequestWithUser, res: Response) => {
     try {
         const studentId = req.user?._id;
         if (!studentId) return res.status(401).json({ success: false, message: "Unauthorized" });
+        // console.log("student: ",studentId);
 
         const student = await Student.findById(studentId);
         if (!student) return res.status(404).json({ success: false, message: "Student not found" });
+        // console.log("student: ",student);
+        const grade = await Grade.findById(student.gradeId);
+        // console.log("grade: ",grade);
+        // console.log("grade: ",grade.gradeName);
+
+        // const papersDebug = await Paper.find({});
+        // console.log(papersDebug);
+
 
         const papers = await Paper.find({
-            gradeId: student.gradeId,
+            gradeId: grade._id,
             publishStatus: true
         }).sort({ createdAt: -1 });
+        // console.log("papers: ",papers);
 
         return res.status(200).json({ success: true, papers });
     } catch (error) {
@@ -128,6 +137,7 @@ export const fetchPublishedPapers = async (req: RequestWithUser, res: Response) 
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
+
 export const fetchPaperContent = async (req: RequestWithUser, res: Response) => {
     try {
         const { paperId } = req.params;
@@ -289,7 +299,7 @@ export const fetchPublishedQuestions = async (req: RequestWithUser, res: Respons
                     subjectName: "$subject.subjectName"
                 }
             },
-             { $sort: { createdAt: -1 } }
+            { $sort: { createdAt: -1 } }
         ]);
 
         return res.status(200).json({ success: true, batches });
@@ -299,6 +309,7 @@ export const fetchPublishedQuestions = async (req: RequestWithUser, res: Respons
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
+
 export const fetchQuestionsForBatch = async (req: RequestWithUser, res: Response) => {
     try {
         const { batchId } = req.params;

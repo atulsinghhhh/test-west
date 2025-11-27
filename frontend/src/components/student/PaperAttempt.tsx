@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Clock, CheckCircle, AlertCircle, ChevronRight, ChevronLeft, Save } from 'lucide-react';
+import { useAuth } from '../../context/AuthProvider';
 
 interface Question {
     _id: string;
@@ -19,8 +20,11 @@ interface Paper {
 }
 
 const PaperAttempt = () => {
+
+    const { baseurl } = useAuth();
     const { paperId } = useParams();
     const navigate = useNavigate();
+
     const [paper, setPaper] = useState<Paper | null>(null);
     const [loading, setLoading] = useState(true);
     const [answers, setAnswers] = useState<{ [key: string]: string }>({});
@@ -72,7 +76,7 @@ const PaperAttempt = () => {
             // I'll implement the UI assuming the endpoint exists: `/api/student/paper/:paperId/content`
             // And I will add it to the backend in the next step.
             
-            const response = await axios.get(`http://localhost:8000/api/student/paper/${paperId}/content`, { withCredentials: true });
+            const response = await axios.get(`${baseurl}/student/paper/${paperId}/content`, { withCredentials: true });
             if (response.data.success) {
                 setPaper(response.data.paper);
                 setTimeLeft(response.data.paper.duration * 60);
@@ -91,15 +95,14 @@ const PaperAttempt = () => {
     const handleSubmit = async () => {
         if (!paper) return;
         setSubmitting(true);
-        
-        // Format answers for backend
+    
         const formattedAnswers = Object.entries(answers).map(([qId, ans]) => ({
             questionId: qId,
             userAnswer: ans
         }));
 
         try {
-            const response = await axios.post(`http://localhost:8000/api/student/paper/submit/${paperId}`, {
+            const response = await axios.post(`${baseurl}/student/paper/submit/${paperId}`, {
                 answers: formattedAnswers
             }, { withCredentials: true });
 
@@ -180,7 +183,7 @@ const PaperAttempt = () => {
                         className="flex items-center gap-2 px-4 py-2 rounded-lg text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                         <ChevronLeft size={20} />
-                        Previous
+                            Previous
                     </button>
 
                     {currentQuestionIndex === paper.questions.length - 1 ? (
@@ -204,7 +207,6 @@ const PaperAttempt = () => {
                 </div>
             </div>
 
-            {/* Question Palette */}
             <div className="bg-[var(--color-card)] p-6 rounded-xl border border-[var(--color-admin-border)]">
                 <h3 className="text-sm font-medium text-[var(--color-muted-foreground)] mb-4">Question Palette</h3>
                 <div className="flex flex-wrap gap-2">

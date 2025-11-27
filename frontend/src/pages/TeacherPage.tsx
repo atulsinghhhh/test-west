@@ -2,12 +2,15 @@ import { useState } from "react"
 import Question from "../components/teacher/Question";
 import RemainingQuota from "../components/teacher/RemainingQuota";
 import PaperGenerator from "../components/teacher/PaperGenerator";
+import { useNavigate } from "react-router-dom";
 // import TeacherAnalytics from "../components/teacher/TeacherAnalytics";
 // import QuestionPublish from "../components/teacher/TeacherAnalytics";
+import PaperPublish from "../components/teacher/TeacherAnalytics";
 
 
 function TeacherPage() {
     const [ tab,setTab ] = useState("questions");
+    const navigate = useNavigate();
 
     const tabStyle = (name: any) =>
         `w-full text-center py-4 px-6 font-medium transition-all duration-200
@@ -26,6 +29,7 @@ function TeacherPage() {
                 <p className="text-sm text-muted-foreground">
                     Manage Question & paper, show Reamaining Quota
                 </p>
+                <button onClick={()=> navigate("/teacher/create")} className="text-3xl text-white">Create</button>
                 <RemainingQuota/>
             </div>
 
@@ -46,7 +50,7 @@ function TeacherPage() {
             <div className="flex-1 overflow-y-auto bg-admin-bg">
                 { tab === "questions" && <Question/>}
                 { tab === "papers" && <PaperGenerator/>}
-                {/* { tab === "publish" && <QuestionPublish/> } */}
+                { tab === "publish" && <PaperPublish/> }
 
             </div>
         </div>

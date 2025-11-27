@@ -14,6 +14,7 @@ const schoolSchema = new Schema({
     paperAdminLimit: { type: Number },
     paperAdminCount: { type: Number, default: 0 },
     questionAdminCount: { type: Number, default: 0 },
+    
 
 },{timestamps: true});
 

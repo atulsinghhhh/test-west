@@ -12,6 +12,7 @@ import { ensureTeacherGradeFields } from "../lib/teacherGrade.js";
 import { Paper } from "../models/paper.model.js";
 import { PDFGenerate } from "../lib/pdfgenerate.js";
 import { v4 as uuidv4 } from "uuid";
+import { Grade } from "../models/grade.model.js";
 
 export const getTeacherQuota = async (req: RequestWithUser, res: Response) => {
     try {
@@ -511,7 +512,8 @@ export const generatepaperAI = async (req: RequestWithUser, res: Response) => {
             paperType,
             testType,
             subjectId,
-            chapterId
+            chapterId,
+            gradeId
         } = req.body;
 
         const teacher = await getTeacherContext(req);
@@ -543,6 +545,7 @@ export const generatepaperAI = async (req: RequestWithUser, res: Response) => {
         if (!subject || !chapter) {
             return res.status(400).json({ success: false, message: "Invalid syllabus structure" });
         }
+
 
         /** ------------------- LIMIT VALIDATION ------------------- **/
         const teacherRemaining = teacher.paperSchoolLimit - teacher.paperSchoolCount;
@@ -639,6 +642,7 @@ Rules:
             subjectId,
             chapterId,
             questions: generatedQuestions, // Save structured questions
+            gradeId: teacher.gradeId
         });
 
         /** ------------------- UPDATE LIMITS ------------------- **/

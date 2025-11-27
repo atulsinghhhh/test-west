@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { FileText, Clock, ChevronRight, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthProvider';
 
 interface Paper {
     _id: string;
@@ -15,6 +16,9 @@ interface Paper {
 }
 
 const StudentPapers = () => {
+
+    const {baseurl} = useAuth();
+
     const [papers, setPapers] = useState<Paper[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -26,7 +30,7 @@ const StudentPapers = () => {
 
     const fetchPapers = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/api/student/papers/published', { withCredentials: true });
+            const response = await axios.get(`${baseurl}/student/papers/published`, { withCredentials: true });
             if (response.data.success) {
                 setPapers(response.data.papers);
             }
