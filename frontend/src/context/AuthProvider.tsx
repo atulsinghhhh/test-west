@@ -46,6 +46,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(!!initialUser);
     const [loading, setLoading] = useState<boolean>(true);
     const [role, setRole] = useState<"admin" | "school" | "teacher" | "student" | null>(initialUser?.role || null);
+    const [logout,setLogout] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -80,6 +81,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         fetchUser();
     }, [baseurl]);
 
+    const handleLogout = async()=>{
+        try {
+            const response =await axios.post(`${baseurl}/auth/logout`,{},{
+                withCredentials: true
+            });
+            setUser(null);
+            setRole(null);
+            setIsLoggedIn(false);
+            localStorage.removeItem("user");
+            setLogout(true);
+        } catch (error) {
+            console.log("Error Occuring due to: ", error);
+            setLogout(false);
+        }
+    }
+
     const value: IAuthContext = {
         baseurl,
         user,
@@ -89,6 +106,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isLoggedIn,
         setIsLoggedIn,
         loading,
+        
     };
 
     return (
