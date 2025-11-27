@@ -1,6 +1,5 @@
 import mongoose,{ Schema } from "mongoose";
 
-
 const paperSchema = new Schema({
     duration: { type: Number, required: true},
     totalQuestion: { type: Number, required: true},
@@ -13,8 +12,15 @@ const paperSchema = new Schema({
     subjectId: { type: mongoose.Schema.Types.ObjectId, ref: "Subject", required: true },
     chapterId: { type: mongoose.Schema.Types.ObjectId, ref: "Chapter", required: true },
     paperId: { type: String, required: true },
-    paperContent: { type: String, required: true},
+    questions: [{
+        questionText: { type: String, required: true },
+        options: [{ type: String }],
+        correctAnswer: { type: String }, // For objective questions
+        type: { type: String }, // MCQ, TRUE/FALSE, SHORT, etc.
+        marks: { type: Number, default: 1 }
+    }],
     publishStatus: { type: Boolean, default: false },
+    gradeId: { type: mongoose.Schema.Types.ObjectId , ref: "Grade"}
 },{timestamps: true});
 
 export const Paper = mongoose.model("Paper",paperSchema);

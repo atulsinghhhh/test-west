@@ -581,19 +581,17 @@ Rules:
 1. Use ONLY the given chapter.
 2. Match EXACT total questions = ${totalQuestion}.
 3. Match EXACT total marks = ${totalMarks}.
-4. Add heading:
-   - School Name: ${school.name}
-   - Exam Name: ${testType}
-   - Subject: ${subject.subjectName}
-   - Paper Type
-   - Duration & Total Marks
-5. Format:
-   SECTION A (Easy)
-   SECTION B (Medium)
-   SECTION C (Hard)
-6. Provide clean text. NO answers.
-
-Now generate the question paper.
+4. RETURN ONLY JSON. No markdown formatting, no explanation.
+5. JSON Format:
+[
+    {
+        "questionText": "Question text here",
+        "options": ["Option A", "Option B", "Option C", "Option D"], // For MCQ
+        "correctAnswer": "Correct Option or Answer",
+        "type": "MCQ", // or "SHORT", "LONG"
+        "marks": 1
+    }
+]
 `;
 
         let result;
@@ -620,6 +618,13 @@ Now generate the question paper.
         let text = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
         text = text.replace(/```json|```/g, "").trim();
 
+        let generatedQuestions;
+        try {
+            generatedQuestions = JSON.parse(text);
+        } catch (e) {
+            return res.status(500).json({ success: false, message: "Failed to parse AI response", raw: text });
+        }
+
         /** ------------------- SAVE PAPER ------------------- **/
         const paper = await Paper.create({
             teacherId: teacher._id,
@@ -633,7 +638,7 @@ Now generate the question paper.
             paperId,
             subjectId,
             chapterId,
-            paperContent: text,
+            questions: generatedQuestions, // Save structured questions
         });
 
         /** ------------------- UPDATE LIMITS ------------------- **/
@@ -713,7 +718,7 @@ export const downloadPaperPDF = async (req, res) => {
 
     -----------------------
 
-    ${firstP.paperContent}
+    ${firstP.questions.map((question: any) => `Question: ${question.questionText}\nAnswer: ${question.userAnswer}\nCorrect Answer: ${question.correctAnswer}\n`).join("\n")}
     `;
         const { filePath, fileName } = await PDFGenerate(content, `Paper_${paperId}`);
 

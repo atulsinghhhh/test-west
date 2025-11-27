@@ -1,14 +1,39 @@
-// import { Router } from "express"
-// import { verifyJwt } from "../middlewares/auth.middleware.js";
-// import { fetchTestSeries, getAllResults, getTestById, getTestResult, submitTest } from "../controllers/student.controller.js";
+import { Router } from "express";
+import { verifyJwt } from "../middlewares/auth.middleware.js";
+import { 
+    attemptPaper, 
+    attemptQuestionBatch, 
+    fetchPaperContent, 
+    fetchPublishedPapers, 
+    fetchPublishedQuestions, 
+    fetchQuestionSubmissions, 
+    fetchQuestionsForBatch, 
+    fetchStudentsForSchool, 
+    fetchStudentsForTeacher, 
+    studentCreatedBySchool, 
+    studentCreatedByTeacher, 
+    viewBatchResult, 
+    viewPaperResult 
+} from "../controllers/student.controller.js";
 
-// const router = Router();
+const router = Router();
 
-// router.get("/",verifyJwt,fetchTestSeries);
-// router.get("/test/:testId",verifyJwt,getTestById);
-// router.post("/tests/:testId/submit",verifyJwt,submitTest);
-// router.get("/results/:testId",verifyJwt,getTestResult);
-// router.get("/results",verifyJwt,getAllResults);
+router.post("/school/create", verifyJwt, studentCreatedBySchool);
+router.post("/teacher/create", verifyJwt, studentCreatedByTeacher);
+router.get("/student/", verifyJwt, fetchStudentsForSchool);
+router.get("/teacher/", verifyJwt, fetchStudentsForTeacher);
 
+// Paper Routes
+router.get("/papers/published", verifyJwt, fetchPublishedPapers);
+router.get("/paper/:paperId/content", verifyJwt, fetchPaperContent);
+router.post("/paper/submit/:paperId", verifyJwt, attemptPaper);
+router.get("/paper/result/:paperId", verifyJwt, viewPaperResult);
 
-// export default router
+// Question Batch Routes
+router.get("/questions/published", verifyJwt, fetchPublishedQuestions);
+router.get("/questions/:batchId", verifyJwt, fetchQuestionsForBatch);
+router.post("/question/submit/:batchId", verifyJwt, attemptQuestionBatch);
+router.get("/question/submissions", verifyJwt, fetchQuestionSubmissions);
+router.get("/question/result/:batchId", verifyJwt, viewBatchResult);
+
+export default router;
