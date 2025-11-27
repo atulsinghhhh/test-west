@@ -14,6 +14,8 @@ import StudentPapers from "./components/student/StudentPapers"
 import StudentQuestions from "./components/student/StudentQuestions"
 import PaperAttempt from "./components/student/PaperAttempt"
 import BatchAttempt from "./components/student/BatchAttempt"
+import BatchResult from "./components/student/BatchResult"
+import PaperResult from "./components/student/PaperResult"
 
 
 function App() {
@@ -64,6 +66,8 @@ function App() {
           <Route path="paper/:paperId" element={<PaperAttempt />} />
           <Route path="practice" element={<StudentQuestions />} />
           <Route path="practice/:batchId" element={<BatchAttempt />} />
+          <Route path="practice/result/:batchId" element={<BatchResult />} />
+          <Route path="paper/result/:paperId" element={<PaperResult />} />
         </Route>
 
       </Routes>

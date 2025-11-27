@@ -258,6 +258,7 @@ export const fetchPublishedQuestions = async (req: RequestWithUser, res: Respons
     try {
         const studentId = req.user?._id;
         if (!studentId) return res.status(401).json({ success: false, message: "Unauthorized" });
+        console.log("studentId: ",studentId);
 
         const student = await Student.findById(studentId);
         if (!student) return res.status(404).json({ success: false, message: "Student not found" });
@@ -276,6 +277,7 @@ export const fetchPublishedQuestions = async (req: RequestWithUser, res: Respons
                     subjectId: { $first: "$subjectId" },
                     chapterId: { $first: "$chapterId" }, 
                     topicId: { $first: "$topicId" },
+                    subtopicId: { $first: "$subtopicId"},
                     totalQuestions: { $sum: 1 },
                     createdAt: { $first: "$createdAt" }
                 }
@@ -301,6 +303,7 @@ export const fetchPublishedQuestions = async (req: RequestWithUser, res: Respons
             },
             { $sort: { createdAt: -1 } }
         ]);
+        console.log("questions: ",batches);
 
         return res.status(200).json({ success: true, batches });
 

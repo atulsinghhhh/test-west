@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { BookOpen, HelpCircle, ChevronRight, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthProvider';
 
 interface QuestionBatch {
     _id: string;
@@ -12,6 +13,8 @@ interface QuestionBatch {
 }
 
 const StudentQuestions = () => {
+    const { baseurl } = useAuth();
+
     const [batches, setBatches] = useState<QuestionBatch[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -23,7 +26,7 @@ const StudentQuestions = () => {
 
     const fetchBatches = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/api/student/questions/published', { withCredentials: true });
+            const response = await axios.get(`${baseurl}/student/questions/published`, { withCredentials: true });
             if (response.data.success) {
                 setBatches(response.data.batches);
             }

@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { CheckCircle, ChevronRight, ChevronLeft, Save, BookOpen } from 'lucide-react';
+import { useAuth } from '../../context/AuthProvider';
 
 interface Question {
     _id: string;
-    questionText: string;
+    questiontext: string;
     options: string[];
     questionType: string;
 }
 
 const BatchAttempt = () => {
+    const { baseurl } = useAuth();
+    
     const { batchId } = useParams();
     const navigate = useNavigate();
     const [questions, setQuestions] = useState<Question[]>([]);
@@ -25,7 +28,7 @@ const BatchAttempt = () => {
 
     const fetchQuestions = async () => {
         try {
-            const response = await axios.get(`http://localhost:8000/api/student/questions/${batchId}`, { withCredentials: true });
+            const response = await axios.get(`${baseurl}/student/questions/${batchId}`, { withCredentials: true });
             if (response.data.success) {
                 setQuestions(response.data.questions);
             }
@@ -49,12 +52,12 @@ const BatchAttempt = () => {
         }));
 
         try {
-            const response = await axios.post(`http://localhost:8000/api/student/question/submit/${batchId}`, {
+            const response = await axios.post(`${baseurl}/student/question/submit/${batchId}`, {
                 answers: formattedAnswers
             }, { withCredentials: true });
 
             if (response.data.success) {
-                navigate(`/student/question/result/${batchId}`);
+                navigate(`/student/practice/result/${batchId}`);
             }
         } catch (error) {
             console.error("Error submitting answers", error);
@@ -92,7 +95,7 @@ const BatchAttempt = () => {
                         </span>
                         <div className="space-y-4 w-full">
                             <h2 className="text-lg font-medium text-[var(--color-foreground)] leading-relaxed">
-                                {currentQuestion.questionText}
+                                {currentQuestion.questiontext}
                             </h2>
                             
                             {/* Options */}
@@ -111,6 +114,19 @@ const BatchAttempt = () => {
                                         {answers[currentQuestion._id] === option && <CheckCircle size={18} />}
                                     </button>
                                 ))}
+                            </div>
+
+                            {/* Answer Textarea */}
+                            <div className="mt-6">
+                                <label className="block text-sm font-medium text-[var(--color-muted-foreground)] mb-2">
+                                    Your Answer (Optional for practice, required for subjective)
+                                </label>
+                                <textarea
+                                    value={answers[currentQuestion._id] || ''}
+                                    onChange={(e) => handleAnswer(currentQuestion._id, e.target.value)}
+                                    placeholder="Type your answer here..."
+                                    className="w-full h-32 p-4 rounded-lg bg-[var(--color-admin-bg)] border border-[var(--color-admin-border)] text-[var(--color-foreground)] focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all resize-none"
+                                />
                             </div>
                         </div>
                     </div>

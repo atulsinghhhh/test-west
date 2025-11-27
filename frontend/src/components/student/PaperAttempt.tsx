@@ -171,6 +171,19 @@ const PaperAttempt = () => {
                                     </button>
                                 ))}
                             </div>
+
+                            {/* Answer Textarea */}
+                            <div className="mt-6">
+                                <label className="block text-sm font-medium text-[var(--color-muted-foreground)] mb-2">
+                                    Your Answer (Optional for objective, required for subjective)
+                                </label>
+                                <textarea
+                                    value={answers[currentQuestion._id] || ''}
+                                    onChange={(e) => handleAnswer(currentQuestion._id, e.target.value)}
+                                    placeholder="Type your answer here..."
+                                    className="w-full h-32 p-4 rounded-lg bg-[var(--color-admin-bg)] border border-[var(--color-admin-border)] text-[var(--color-foreground)] focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all resize-none"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>

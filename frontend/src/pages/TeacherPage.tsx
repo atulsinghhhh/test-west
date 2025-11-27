@@ -5,7 +5,8 @@ import PaperGenerator from "../components/teacher/PaperGenerator";
 import { useNavigate } from "react-router-dom";
 // import TeacherAnalytics from "../components/teacher/TeacherAnalytics";
 // import QuestionPublish from "../components/teacher/TeacherAnalytics";
-import PaperPublish from "../components/teacher/TeacherAnalytics";
+// import PaperPublish from "../components/teacher/TeacherAnalytics";
+import QuestionPublish from "../components/teacher/TeacherAnalytics";
 
 
 function TeacherPage() {
@@ -50,7 +51,7 @@ function TeacherPage() {
             <div className="flex-1 overflow-y-auto bg-admin-bg">
                 { tab === "questions" && <Question/>}
                 { tab === "papers" && <PaperGenerator/>}
-                { tab === "publish" && <PaperPublish/> }
+                { tab === "publish" && <QuestionPublish/> }
 
             </div>
         </div>

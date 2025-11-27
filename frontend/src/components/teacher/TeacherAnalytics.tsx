@@ -1,103 +1,98 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../../context/AuthProvider"
+import { useAuth } from "../../context/AuthProvider";
 import axios from "axios";
 
-interface IPaperAnalytics {
-    _id: string;
-    paperId: string;
-    testType: string;
-    totalMarks: number;
-    totalQuestion: number;
-    paperType: string;
-    publishStatus: boolean;
+interface IQuestion {
+   _id: string;
+   batchId: string;
+   isPublish: boolean;
+   questionType: string;
+   difficulty: string;
+   noofQuestion: number; 
 }
 
-
-function PaperPublish() {
+function QuestionPublish() {
     const { baseurl } = useAuth();
+    const [Questions, setQuestions] = useState<IQuestion[]>([]);
+    const [loading,setLoading] = useState<boolean>(false);
+    const [error,setError] = useState<string>("");
+    const [message,setMessage] = useState<string>("");
 
-    const [paper, setPaper] = useState<IPaperAnalytics[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string>("");
-    const [message, setMessage] = useState<string>("");
-
-    useEffect(() => {
-        const fetchPapers = async () => {
+    useEffect(()=>{
+        const fetchQuestions = async () =>{
             setLoading(true);
-            try {
-                const response = await axios.get(`${baseurl}/teacher/papers`, {
-                    withCredentials: true
-                })
-                if (response.data.success) {
-                    setPaper(response.data.papers);
-                } else {
-                    setError("Failed to fetch papers");
+            try{
+                const response =await axios.get(`${baseurl}/teacher/questions`,{
+                    withCredentials:true
+                });
+                if(response.data.success){
+                    setQuestions(response.data.questions);
+                }else{
+                    setError("Failed to fetch questions");
                 }
-                console.log("fetch the data: ", response.data.papers);
-            } catch (error) {
-                console.log("Error fetching papers: ", error);
-                setError("Failed to fetch papers");
-            } finally {
+
+                console.log("fetch the data: ", response.data.questions);
+            }catch(error){
+                console.log("Error fetching questions: ", error);
+                setError("Failed to fetch questions");
+            } finally{
                 setLoading(false);
             }
         }
-        fetchPapers();
-    }, []);
+        fetchQuestions();
+    },[]);
 
-    const handlePublish = async (paperId: string) => {
+    const handlePublish = async (batchId:string)=>{
         try {
-            await axios.put(`${baseurl}/teacher/paper/publish/${paperId}`, {}, {
-                withCredentials: true
+            await axios.put(`${baseurl}/teacher/question/publish/${batchId}`,{},{
+                withCredentials:true
             })
-            setMessage("Paper published successfully");
-            setPaper((prev) => (
-                prev.map((p) => (
-                    p.paperId === paperId ? { ...p, publishStatus: true } : p
+            setMessage("Question published successfully");
+            setQuestions((prev)=>(
+                prev.map((q)=>(
+                    q.batchId === batchId ? {...q,isPublish:true}:q
                 ))
             ))
         } catch (error) {
-            console.log("Error publishing paper: ", error);
-            setError("Failed to publish paper");
+            console.log("Error publishing question: ", error);
+            setError("Failed to publish question");
         }
     }
+  return (
+     <div className="p-6 bg-[--color-admin-bg] min-h-screen text-[--color-foreground]">
+            <h1 className="text-2xl font-semibold mb-6 text-white">📝 Teacher Question Analytics</h1>
 
-    return (
-        <div className="p-6 bg-[--color-admin-bg] min-h-screen text-[--color-foreground] ">
-            <h1 className="text-2xl font-semibold mb-6 text-white">📄 Teacher Paper Analytics</h1>
-
-            {loading && <p className="text-[--color-primary]">Loading papers...</p>}
+            {loading && <p className="text-[--color-primary]">Loading questions...</p>}
             {error && <p className="text-red-500 font-medium">{error}</p>}
             {message && <p className="text-green-500 font-medium">{message}</p>}
 
-            {!loading && paper.length > 0 && (
+            {!loading && Questions.length > 0 && (
                 <div className="overflow-x-auto mt-4">
-                    <table className="w-full rounded-lg bg-[--color-card]">
+                    <table className="w-full rounded-lg bg-[--color-card] text-white">
                         <thead>
-                            <tr className="bg-[--color-admin-panel] text-white">
-                                <th className="p-3 text-left">Paper ID</th>
-                                <th className="p-3 text-left">Test Type</th>
-                                <th className="p-3 text-left">Paper Type</th>
-                                <th className="p-3 text-left">Total Marks</th>
-                                <th className="p-3 text-left">Total Questions</th>
+                            <tr className="bg-[--color-admin-panel] text-[--color-muted-foreground]">
+                                <th className="p-3 text-left">Batch ID</th>
+                                <th className="p-3 text-left">Question Type</th>
+                                <th className="p-3 text-left">Difficulty</th>
+                                <th className="p-3 text-left">No. of Questions</th>
                                 <th className="p-3 text-left">Status</th>
                                 <th className="p-3 text-left">Action</th>
                             </tr>
                         </thead>
 
                         <tbody>
-                            {paper.map((p) => (
+                            {Questions.map((q) => (
                                 <tr
-                                    key={p.paperId}
+                                    key={q.batchId}
                                     className="hover:bg-[--color-admin-hover] transition text-white"
                                 >
-                                    <td className="p-3">{p.paperId}</td>
-                                    <td className="p-3">{p.testType}</td>
-                                    <td className="p-3">{p.paperType}</td>
-                                    <td className="p-3">{p.totalMarks}</td>
-                                    <td className="p-3">{p.totalQuestion}</td>
+                                    <td className="p-3">{q.batchId}</td>
+                                    <td className="p-3">{q.questionType}</td>
+                                    <td className="p-3">{q.difficulty}</td>
+                                    <td className="p-3">{q.noofQuestion}</td>
 
                                     <td className="p-3">
-                                        {p.publishStatus ? (
+                                        {q.isPublish ? (
                                             <span className="text-green-400 font-semibold">Published</span>
                                         ) : (
                                             <span className="text-red-400 font-semibold">Not Published</span>
@@ -106,14 +101,14 @@ function PaperPublish() {
 
                                     <td className="p-3">
                                         <button
-                                            onClick={() => handlePublish(p.paperId)}
+                                            onClick={() => handlePublish(q.batchId)}
                                             className={`px-4 py-1.5 rounded-lg font-medium transition 
-                                                ${p.publishStatus
+                                                ${q.isPublish
                                                     ? "bg-red-600 hover:bg-red-700"
                                                     : "bg-[--color-primary] hover:bg-green-700"
                                                 }`}
                                         >
-                                            {p.publishStatus ? "Unpublish" : "Publish"}
+                                            {q.isPublish ? "Unpublish" : "Publish"}
                                         </button>
                                     </td>
                                 </tr>
@@ -123,12 +118,11 @@ function PaperPublish() {
                 </div>
             )}
 
-            {!loading && paper.length === 0 && (
-                <p className="text-[--color-muted-foreground] mt-4">No papers found.</p>
+            {!loading && Questions.length === 0 && (
+                <p className="text-[--color-muted-foreground] mt-4">No questions found.</p>
             )}
         </div>
-
-    )
+  )
 }
 
-export default PaperPublish
+export default QuestionPublish
