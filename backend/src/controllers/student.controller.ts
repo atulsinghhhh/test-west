@@ -7,6 +7,7 @@ import type { RequestWithUser } from "./user.controller.js";
 import { Paper } from "../models/paper.model.js";
 import { Attempt } from "../models/attempt.model.js";
 import { Question } from "../models/question.model.js";
+import { Subject } from "../models/subject.model.js";
 
 export const studentCreatedBySchool = async(req: RequestWithUser, res: Response)=>{
     try {
@@ -445,6 +446,118 @@ export const viewBatchResult = async (req: RequestWithUser, res: Response) => {
         return res.status(200).json({ success: true, attempt });
     } catch (error) {
         console.log("Error viewing batch result:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+export const fetchStudentDashboardStats = async (req: RequestWithUser, res: Response) => {
+    try {
+        // TODO: WRITE THE API FOR DASHBOARD STATS
+    } catch (error) {
+        
+    }
+};
+
+export const createPracticeQuiz = async (req: RequestWithUser, res: Response) => {
+    try {
+        const studentId = req.user?._id;
+        const { subjectId } = req.body;
+
+        if (!studentId) return res.status(401).json({ success: false, message: "Unauthorized" });
+
+        const student = await Student.findById(studentId);
+        if (!student) return res.status(404).json({ success: false, message: "Student not found" });
+
+        const query: any = { 
+            gradeId: student.gradeId,
+            isPublish: true
+        };
+
+        console.log("query: ",query);
+        if (subjectId) {
+            const subject = await Subject.findOne({ subjectName: subjectId });
+            if(!subject){
+                return res.status(404).json({ success: false, message: "subject  not found"})
+            }
+            query.subjectId = subject._id;
+        }
+        
+        console.log("Final Query:", query);
+
+        const questions = await Question.aggregate([
+            { $match: query },
+            { $sample: { size: 10 } }
+        ]);
+
+        if (questions.length === 0) {
+            return res.status(404).json({ success: false, message: "No questions found for practice" });
+        }
+        console.log("questions: ", questions);
+
+        const batchId = "practice_" + Date.now();
+        
+        return res.status(200).json({ success: true, questions, batchId });
+
+    } catch (error) {
+        console.log("Error creating practice quiz:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+export const submitPracticeQuiz = async (req: RequestWithUser, res: Response) => {
+    try {
+        const studentId = req.user?._id;
+        const { answers } = req.body; // Array of { questionId, userAnswer }
+
+        if (!studentId) return res.status(401).json({ success: false, message: "Unauthorized" });
+        if (!answers || !Array.isArray(answers)) {
+            return res.status(400).json({ success: false, message: "Invalid answers format" });
+        }
+
+        const student = await Student.findById(studentId);
+        
+        let totalMarks = 0;
+        let obtainedMarks = 0;
+        const evaluatedAnswers = [];
+
+        for (const ans of answers) {
+            const question = await Question.findById(ans.questionId);
+            if (!question) continue;
+
+            const isCorrect = compareAnswers(question.correctAnswer, ans.userAnswer, question.questionType);
+            const marks = isCorrect ? 1 : 0;
+
+            totalMarks += 1;
+            obtainedMarks += marks;
+
+            evaluatedAnswers.push({
+                questionId: question._id,
+                questionText: question.questiontext,
+                userAnswer: ans.userAnswer,
+                correctAnswer: question.correctAnswer,
+                isCorrect,
+                marks
+            });
+        }
+
+        const percentage = totalMarks > 0 ? (obtainedMarks / totalMarks) * 100 : 0;
+
+        const newAttempt = await Attempt.create({
+            studentId,
+            gradeId: student?.gradeId,
+            // subjectId: ... we might have mixed subjects, so maybe leave blank or take from first question
+            answers: evaluatedAnswers,
+            totalMarks,
+            obtainedMarks,
+            percentage,
+            status: "completed",
+            feedback: "Practice Quiz"
+        });
+
+        return res.status(200).json({ success: true, message: "Practice submitted", result: newAttempt });
+
+    } catch (error) {
+        console.log("Error submitting practice quiz:", error);
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };

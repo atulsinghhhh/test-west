@@ -3,15 +3,18 @@ import { verifyJwt } from "../middlewares/auth.middleware.js";
 import { 
     attemptPaper, 
     attemptQuestionBatch, 
+    createPracticeQuiz, 
     fetchPaperContent, 
     fetchPublishedPapers, 
     fetchPublishedQuestions, 
     fetchQuestionSubmissions, 
     fetchQuestionsForBatch, 
+    fetchStudentDashboardStats, 
     fetchStudentsForSchool, 
     fetchStudentsForTeacher, 
     studentCreatedBySchool, 
     studentCreatedByTeacher, 
+    submitPracticeQuiz, 
     viewBatchResult, 
     viewPaperResult 
 } from "../controllers/student.controller.js";
@@ -22,6 +25,13 @@ router.post("/school/create", verifyJwt, studentCreatedBySchool);
 router.post("/teacher/create", verifyJwt, studentCreatedByTeacher);
 router.get("/student/", verifyJwt, fetchStudentsForSchool);
 router.get("/teacher/", verifyJwt, fetchStudentsForTeacher);
+
+// Dashboard
+router.get("/dashboard", verifyJwt, fetchStudentDashboardStats);
+
+// Practice
+router.post("/practice/create", verifyJwt, createPracticeQuiz);
+router.post("/practice/submit", verifyJwt, submitPracticeQuiz);
 
 // Paper Routes
 router.get("/papers/published", verifyJwt, fetchPublishedPapers);  //fix

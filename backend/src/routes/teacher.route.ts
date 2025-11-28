@@ -1,6 +1,6 @@
 import { Router } from "express"
 import { verifyJwt } from "../middlewares/auth.middleware.js";
-import { downloadPaperPDF, downloadQuestionPDF, fetchPapers, fetchQuestions, fetchTeacherSchool, generatepaperAI, generateQuestionAI, getTeacherChapters, getTeacherGrade, getTeacherQuota, getTeacherSubjects, getTeacherSubtopics, getTeacherTopics, publishedQuestions, publishPaper } from "../controllers/teacher.controller.js";
+import { downloadPaperPDF, downloadQuestionPDF, fetchClassAnalytics, fetchPapers, fetchQuestions, fetchStudentSubmissions, fetchTeacherSchool, generatepaperAI, generateQuestionAI, getTeacherChapters, getTeacherGrade, getTeacherQuota, getTeacherSubjects, getTeacherSubtopics, getTeacherTopics, publishedQuestions, publishPaper } from "../controllers/teacher.controller.js";
 
 const router = Router();
 
@@ -12,6 +12,10 @@ router.get("/topics/:topicId/subtopics", verifyJwt, getTeacherSubtopics);
 
 router.get("/school/me", verifyJwt, fetchTeacherSchool)
 router.get("/quota", verifyJwt, getTeacherQuota)
+
+// analytics routes
+router.get("/analytics/submissions", verifyJwt, fetchStudentSubmissions);
+router.get("/analytics/overview", verifyJwt, fetchClassAnalytics);
 
 // question routes
 

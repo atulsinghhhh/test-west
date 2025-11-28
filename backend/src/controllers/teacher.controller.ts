@@ -13,6 +13,7 @@ import { Paper } from "../models/paper.model.js";
 import { PDFGenerate } from "../lib/pdfgenerate.js";
 import { v4 as uuidv4 } from "uuid";
 import { Grade } from "../models/grade.model.js";
+import { Attempt } from "../models/attempt.model.js";
 
 export const getTeacherQuota = async (req: RequestWithUser, res: Response) => {
     try {
@@ -757,6 +758,29 @@ export const publishedQuestions = async (req: RequestWithUser, res: Response) =>
     }
 }
 
+export const publishPaper = async (req: RequestWithUser, res: Response) => {
+    try {
+        const { paperId } = req.params;
+        const teacher = await getTeacherContext(req);
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+
+        const paper = await Paper.findOne({ paperId, teacherId: teacher._id });
+        if (!paper) {
+            return res.status(404).json({ success: false, message: "No paper found for this ID" });
+        }
+
+        paper.publishStatus = true;
+        await paper.save();
+
+        return res.status(200).json({ success: true, message: "Paper published successfully", paper });
+    } catch (error) {
+        console.log("Error publishing paper:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
+
 
 export const fetchQuestions = async (req: RequestWithUser, res: Response) => {
     try {
@@ -799,6 +823,84 @@ export const fetchQuestions = async (req: RequestWithUser, res: Response) => {
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 }
+
+export const fetchStudentSubmissions = async (req: RequestWithUser, res: Response) => {
+    try {
+        const teacher = await getTeacherContext(req);
+        
+        // Fetch attempts for students in the teacher's grade/school
+        // We can filter by gradeId to ensure relevance
+        const attempts = await Attempt.find({ 
+            gradeId: teacher.gradeId 
+        })
+        .populate("studentId", "name email")
+        .populate("paperId", "paperType testType")
+        .populate("subjectId", "subjectName")
+        .sort({ createdAt: -1 });
+
+        return res.status(200).json({ success: true, attempts });
+    } catch (error) {
+        console.log("Error fetching student submissions:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+export const fetchClassAnalytics = async (req: RequestWithUser, res: Response) => {
+    try {
+        const teacher = await getTeacherContext(req);
+
+        // Aggregate analytics
+        const analytics = await Attempt.aggregate([
+            { $match: { gradeId: teacher.gradeId } },
+            {
+                $group: {
+                    _id: null,
+                    totalAttempts: { $sum: 1 },
+                    avgScore: { $avg: "$percentage" },
+                    highestScore: { $max: "$percentage" },
+                    lowestScore: { $min: "$percentage" }
+                }
+            }
+        ]);
+
+        const subjectAnalytics = await Attempt.aggregate([
+            { $match: { gradeId: teacher.gradeId } },
+            {
+                $group: {
+                    _id: "$subjectId",
+                    avgScore: { $avg: "$percentage" },
+                    totalAttempts: { $sum: 1 }
+                }
+            },
+            {
+                $lookup: {
+                    from: "subjects",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "subject"
+                }
+            },
+            { $unwind: "$subject" },
+            {
+                $project: {
+                    subjectName: "$subject.subjectName",
+                    avgScore: 1,
+                    totalAttempts: 1
+                }
+            }
+        ]);
+
+        return res.status(200).json({ 
+            success: true, 
+            analytics: analytics[0] || { totalAttempts: 0, avgScore: 0, highestScore: 0, lowestScore: 0 },
+            subjectAnalytics 
+        });
+    } catch (error) {
+        console.log("Error fetching class analytics:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
 
 export const fetchPapers = async (req: RequestWithUser, res: Response) => {
     try {
@@ -847,25 +949,3 @@ export const fetchPapers = async (req: RequestWithUser, res: Response) => {
     }
 }
 
-export const publishPaper = async (req: RequestWithUser, res: Response) => {
-    try {
-        const { paperId } = req.params;
-        const teacher = await getTeacherContext(req);
-        if (!teacher) {
-            return res.status(404).json({ success: false, message: "Teacher not found" });
-        }
-
-        const paper = await Paper.findOne({ paperId, teacherId: teacher._id });
-        if (!paper) {
-            return res.status(404).json({ success: false, message: "No paper found for this ID" });
-        }
-
-        paper.publishStatus = true;
-        await paper.save();
-
-        return res.status(200).json({ success: true, message: "Paper published successfully", paper });
-    } catch (error) {
-        console.log("Error publishing paper:", error);
-        return res.status(500).json({ success: false, message: "Internal server error" });
-    }
-}
