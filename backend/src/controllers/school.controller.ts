@@ -7,6 +7,7 @@ import { Chapter } from "../models/chapter.model.js";
 import { Subject } from "../models/subject.model.js";
 import { Topic } from "../models/topic.model.js"
 import { Subtopic } from "../models/subtopic.model.js";
+import { Student } from "../models/student.model.js";
 
 
 export const addTeachers = async (req: RequestWithUser, res: Response) => {
@@ -378,17 +379,30 @@ export const deleteSubtopic = async (req: RequestWithUser, res: Response) => {
     }
 };
 
-export const getStatsSchool = async(req: RequestWithUser,res: Response)=>{
+export const getStatsSchool = async (req: RequestWithUser, res: Response) => {
     try {
         const schoolId = req.user?._id;
 
-        const teachers = await Teacher.find({school: schoolId})
-            .select("name email questionSchoolLimit paperSchoolLimit questionSchoolCount paperSchoolCount");
-        if(!teachers){
-            return res.status(404).json({success: false, message: "teachrr are not found"});
-        };
+        if (!schoolId) {
+            return res.status(400).json({
+                success: false,
+                message: "School ID missing from logged user",
+            });
+        }
 
-        const stats = teachers.map(teacher =>{
+        // Fetch all teachers for this school
+        const teachers = await Teacher.find({ schoolId })
+            .select("name email questionSchoolLimit paperSchoolLimit questionSchoolCount paperSchoolCount");
+
+        if (!teachers || teachers.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No teachers found",
+            });
+        }
+
+        // Prepare teacher-wise stats
+        const stats = teachers.map((teacher) => {
             const remainingQuestions = teacher.questionSchoolLimit - teacher.questionSchoolCount;
             const remainingPapers = teacher.paperSchoolLimit - teacher.paperSchoolCount;
 
@@ -405,23 +419,27 @@ export const getStatsSchool = async(req: RequestWithUser,res: Response)=>{
 
                 remainingQuestions,
                 remainingPapers,
-            }
+            };
         });
-        const totalteacher = teachers.length
-        const totalStudents = teachers.reduce((sum, s) => sum + (s.students?.length || 0), 0);
-        // TODO: fix the student are not showns;
 
-        const totalQuestionLimit = teachers.reduce((sum, s) => sum + s.questionSchoolLimit, 0);
-        const totalQuestionCount = teachers.reduce((sum, s) => sum + s.questionSchoolCount, 0);
+        // Total teacher count
+        const totalTeachers = teachers.length;
 
-        const totalPaperLimit =teachers.reduce((sum, s) => sum + s.paperSchoolLimit, 0);
-        const totalPaperCount = teachers.reduce((sum, s) => sum + s.paperSchoolCount, 0);
+        const totalStudents = await Student.countDocuments({ schoolId });
+
+        const totalQuestionLimit = teachers.reduce((sum, t) => sum + t.questionSchoolLimit, 0);
+        const totalQuestionCount = teachers.reduce((sum, t) => sum + t.questionSchoolCount, 0);
+
+        const totalPaperLimit = teachers.reduce((sum, t) => sum + t.paperSchoolLimit, 0);
+        const totalPaperCount = teachers.reduce((sum, t) => sum + t.paperSchoolCount, 0);
 
         return res.status(200).json({
             success: true,
-            totalteacher,
-            totalStudents,
-            totalUsage: {
+
+            totals: {
+                totalTeachers,
+                totalStudents,
+
                 totalQuestionLimit,
                 totalQuestionCount,
                 totalQuestionRemaining: totalQuestionLimit - totalQuestionCount,
@@ -430,10 +448,15 @@ export const getStatsSchool = async(req: RequestWithUser,res: Response)=>{
                 totalPaperCount,
                 totalPaperRemaining: totalPaperLimit - totalPaperCount,
             },
-            teachers: stats
+
+            teachers: stats,
         });
+
     } catch (error) {
         console.error("Error Occurring: ", error);
-        return res.status(500).json({ success: false, message: "Internal server error" });
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
     }
-}
+};

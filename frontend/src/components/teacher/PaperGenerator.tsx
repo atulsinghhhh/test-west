@@ -161,13 +161,7 @@ function PaperGenerator() {
   }
 
   return (
-  <div
-      className="max-w-4xl mx-auto p-6 rounded-lg"
-      style={{
-        backgroundColor: "var(--color-admin-bg)",
-        color: "var(--color-foreground)",
-      }}
-    >
+  <div className="max-w-4xl mx-auto p-6 rounded-lg bg-admin-bg text-foreground">
       <h2 className="text-2xl font-bold mb-4">Generate Question Paper</h2>
 
       {error && <p className="text-red-500 mb-2">{error}</p>}
@@ -184,13 +178,7 @@ function PaperGenerator() {
           type="text"
           value={schoolName}
           readOnly
-          className="w-full p-2 rounded font-semibold"
-          style={{
-            backgroundColor: "var(--color-admin-panel)",
-            color: "var(--color-foreground)",
-            borderColor: "var(--color-admin-border)",
-            cursor: "not-allowed",
-          }}
+          className="w-full p-2 rounded font-semibold bg-admin-panel text-foreground border border-admin-border cursor-not-allowed"
         />
       </div>
 
@@ -198,14 +186,9 @@ function PaperGenerator() {
         <div>
           <label className="block mb-1 text-sm">Select Subject</label>
           <select
-            className="w-full p-2 rounded"
+            className="w-full p-2 rounded bg-admin-panel text-foreground border border-admin-border"
             value={subjectId}
             onChange={(e) => handleSubjectChange(e.target.value)}
-            style={{
-              backgroundColor: "var(--color-admin-panel)",
-              color: "var(--color-foreground)",
-              borderColor: "var(--color-admin-border)",
-            }}
           >
             <option value="">Select Subject</option>
             {subject.map((sub) => (
@@ -220,14 +203,9 @@ function PaperGenerator() {
         <div>
           <label className="block mb-1 text-sm">Select Chapter</label>
           <select
-            className="w-full p-2 rounded"
+            className="w-full p-2 rounded bg-admin-panel text-foreground border border-admin-border"
             value={chapterId}
             onChange={(e) => setChapterId(e.target.value)}
-            style={{
-              backgroundColor: "var(--color-admin-panel)",
-              color: "var(--color-foreground)",
-              borderColor: "var(--color-admin-border)",
-            }}
           >
             <option value="">Select Chapter</option>
             {chapter.map((ch) => (
@@ -243,16 +221,11 @@ function PaperGenerator() {
           <label className="block mb-1 text-sm">Duration (minutes)</label>
           <input
             type="number"
-            className="w-full p-2 rounded"
+            className="w-full p-2 rounded bg-admin-panel text-foreground border border-admin-border"
             value={paperData.duration}
             onChange={(e) =>
               setPaperData({ ...paperData, duration: Number(e.target.value) })
             }
-            style={{
-              backgroundColor: "var(--color-admin-panel)",
-              color: "var(--color-foreground)",
-              borderColor: "var(--color-admin-border)",
-            }}
           />
         </div>
 
@@ -261,16 +234,11 @@ function PaperGenerator() {
           <label className="block mb-1 text-sm">Total Marks</label>
           <input
             type="number"
-            className="w-full p-2 rounded"
+            className="w-full p-2 rounded bg-admin-panel text-foreground border border-admin-border"
             value={paperData.totalMarks}
             onChange={(e) =>
               setPaperData({ ...paperData, totalMarks: Number(e.target.value) })
             }
-            style={{
-              backgroundColor: "var(--color-admin-panel)",
-              color: "var(--color-foreground)",
-              borderColor: "var(--color-admin-border)",
-            }}
           />
         </div>
 
@@ -279,7 +247,7 @@ function PaperGenerator() {
           <label className="block mb-1 text-sm">Total Questions</label>
           <input
             type="number"
-            className="w-full p-2 rounded"
+            className="w-full p-2 rounded bg-admin-panel text-foreground border border-admin-border"
             value={paperData.totalQuestion}
             onChange={(e) =>
               setPaperData({
@@ -287,11 +255,6 @@ function PaperGenerator() {
                 totalQuestion: Number(e.target.value),
               })
             }
-            style={{
-              backgroundColor: "var(--color-admin-panel)",
-              color: "var(--color-foreground)",
-              borderColor: "var(--color-admin-border)",
-            }}
           />
         </div>
 
@@ -299,17 +262,12 @@ function PaperGenerator() {
         <div className="md:col-span-2">
           <label className="block mb-1 text-sm">Instructions</label>
           <textarea
-            className="w-full p-2 rounded"
+            className="w-full p-2 rounded bg-admin-panel text-foreground border border-admin-border"
             rows={3}
             value={paperData.Instruction}
             onChange={(e) =>
               setPaperData({ ...paperData, Instruction: e.target.value })
             }
-            style={{
-              backgroundColor: "var(--color-admin-panel)",
-              color: "var(--color-foreground)",
-              borderColor: "var(--color-admin-border)",
-            }}
           />
         </div>
 
@@ -317,16 +275,11 @@ function PaperGenerator() {
         <div>
           <label className="block mb-1 text-sm">Paper Type</label>
           <select
-            className="w-full p-2 rounded"
+            className="w-full p-2 rounded bg-admin-panel text-foreground border border-admin-border"
             value={paperData.paperType}
             onChange={(e) =>
               setPaperData({ ...paperData, paperType: e.target.value })
             }
-            style={{
-              backgroundColor: "var(--color-admin-panel)",
-              color: "var(--color-foreground)",
-              borderColor: "var(--color-admin-border)",
-            }}
           >
             <option value="">Select Type</option>
             <option value="chapterwise">Chapterwise</option>
@@ -338,16 +291,11 @@ function PaperGenerator() {
         <div>
           <label className="block mb-1 text-sm">Test Type</label>
           <select
-            className="w-full p-2 rounded"
+            className="w-full p-2 rounded bg-admin-panel text-foreground border border-admin-border"
             value={paperData.testType}
             onChange={(e) =>
               setPaperData({ ...paperData, testType: e.target.value })
             }
-            style={{
-              backgroundColor: "var(--color-admin-panel)",
-              color: "var(--color-foreground)",
-              borderColor: "var(--color-admin-border)",
-            }}
           >
             <option value="">Select Test Type</option>
             <option value="Unit Test">Unit Test</option>
@@ -361,21 +309,13 @@ function PaperGenerator() {
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 rounded font-semibold"
-            style={{
-              backgroundColor: "var(--color-primary)",
-              color: "var(--color-foreground)",
-            }}
+            className="px-4 py-2 rounded font-semibold bg-primary text-foreground hover:bg-green-600 transition-colors"
           >
             {loading ? "Generating..." : "Generate Paper"}
           </button>
           <button
             type="button"
-            className="px-4 py-2 rounded font-semibold"
-            style={{
-              backgroundColor: "var(--color-admin-hover)",
-              color: "var(--color-foreground)",
-            }}
+            className="px-4 py-2 rounded font-semibold bg-admin-hover text-foreground hover:bg-admin-border transition-colors"
             onClick={handleDownload}
           >
             Download PDF

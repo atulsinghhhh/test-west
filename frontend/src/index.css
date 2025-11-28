@@ -1,13 +1,37 @@
 @import "tailwindcss";
 
 
+@layer base {
+  :root {
+    --color-admin-bg: #f3f4f6; /* gray-100 */
+    --color-admin-panel: #ffffff; /* white */
+    --color-admin-hover: #e5e7eb; /* gray-200 */
+    --color-admin-border: #d1d5db; /* gray-300 */
+    --color-card: #ffffff; /* white */
+    --color-primary: #2dd36f;
+    --color-foreground: #111827; /* gray-900 */
+    --color-muted-foreground: #6b7280; /* gray-500 */
+  }
+
+  .dark {
+    --color-admin-bg: #0d0f10;
+    --color-admin-panel: #111315;
+    --color-admin-hover: #16181d;
+    --color-admin-border: #1f242c;
+    --color-card: #14161A;
+    --color-primary: #2dd36f;
+    --color-foreground: #ffffff;
+    --color-muted-foreground: #9ca3af;
+  }
+}
+
 @theme {
-  --color-admin-bg: #0d0f10;
-  --color-admin-panel: #111315;
-  --color-admin-hover: #16181d;
-  --color-admin-border: #1f242c;
-  --color-card: #14161A;
-  --color-primary: #2dd36f;
-  --color-foreground: #ffffff;
-  --color-muted-foreground: #9ca3af;
+  --color-admin-bg: var(--color-admin-bg);
+  --color-admin-panel: var(--color-admin-panel);
+  --color-admin-hover: var(--color-admin-hover);
+  --color-admin-border: var(--color-admin-border);
+  --color-card: var(--color-card);
+  --color-primary: var(--color-primary);
+  --color-foreground: var(--color-foreground);
+  --color-muted-foreground: var(--color-muted-foreground);
 }

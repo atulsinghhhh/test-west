@@ -118,6 +118,20 @@ export const getTeacherSubjects = async (req: RequestWithUser, res: Response) =>
     }
 };
 
+export const getTeacherSchoolGrades = async (req: RequestWithUser, res: Response) => {
+    try {
+        const teacher = await getTeacherContext(req);
+        
+        // Fetch all grades for the teacher's school
+        const grades = await Grade.find({ schoolId: teacher.school }).sort({ gradeName: 1 });
+
+        return res.status(200).json({ success: true, grades });
+    } catch (error) {
+        console.error("Error fetching teacher school grades:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
 export const getTeacherChapters = async (req: RequestWithUser, res: Response) => {
     try {
         const teacher = await getTeacherContext(req);

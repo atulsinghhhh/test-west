@@ -19,10 +19,7 @@ function AdminPage() {
     return (
         <div className="h-screen w-screen bg-admin-bg flex flex-col">
         
-        {/* Header */}
-        <div className="bg-card border-b border-admin-border px-8 py-4">
-            <Navbar/>
-        </div>
+        <Navbar/>
 
         {/* Tabs */}
         <div className="grid grid-cols-3 border-b border-admin-border bg-admin-panel">

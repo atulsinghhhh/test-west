@@ -273,7 +273,7 @@ export default function Question() {
                                 type="text"
                                 value={gradeLabel}
                                 readOnly
-                                className="w-full bg-black border border-input rounded-lg px-3 py-2 focus:outline-none"
+                                className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none"
                             />
                         </div>
                         <div>
@@ -281,7 +281,7 @@ export default function Question() {
                             <select
                                 value={filterBy}
                                 onChange={(e) => setFilterBy(e.target.value)}
-                                className="w-full bg-black border border-input rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                             >
                                 <option value="subject">Subject wise</option>
                                 <option value="chapter" disabled>Chapter wise (coming soon)</option>
@@ -295,7 +295,7 @@ export default function Question() {
                             <select
                                 value={subjectId}
                                 onChange={(e) => handleSubjectChange(e.target.value)}
-                                className="w-full bg-black border border-input rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                             >
                                 <option value="">Select subject</option>
                                 {subjects.map((subject) => (
@@ -311,7 +311,7 @@ export default function Question() {
                             <select
                                 value={questionType}
                                 onChange={(e) => setQuestionType(e.target.value)}
-                                className="w-full bg-black border border-input rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                             >
                                 <option value="">Select type</option>
                                 {questionTypes.map((type) => (
@@ -330,7 +330,7 @@ export default function Question() {
                                 value={chapterId}
                                 onChange={(e) => handleChapterChange(e.target.value)}
                                 disabled={!subjectId}
-                                className="w-full bg-black border border-input rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                                className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
                             >
                                 <option value="">Select chapter</option>
                                 {chapters.map((chapter) => (
@@ -345,7 +345,7 @@ export default function Question() {
                             <select
                                 value={difficulty}
                                 onChange={(e) => setDifficulty(e.target.value)}
-                                className="w-full bg-black border border-input rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                             >
                                 <option value="">Select difficulty</option>
                                 {difficultyLevels.map((level) => (
@@ -362,7 +362,7 @@ export default function Question() {
                                 min={1}
                                 value={noofQuestions}
                                 onChange={(e) => setNoofQuestions(Number(e.target.value))}
-                                className="w-full bg-black border border-input rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                             />
                         </div>
                     </div>
@@ -374,7 +374,7 @@ export default function Question() {
                                 value={topicId}
                                 onChange={(e) => handleTopicChange(e.target.value)}
                                 disabled={!chapterId}
-                                className="w-full bg-black border border-input rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                                className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
                             >
                                 <option value="">Select topic</option>
                                 {topics.map((topic) => (
@@ -390,7 +390,7 @@ export default function Question() {
                                 value={subtopicId}
                                 onChange={(e) => setSubtopicId(e.target.value)}
                                 disabled={!topicId}
-                                className="w-full bg-black border border-input rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                                className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
                             >
                                 <option value="">Select subtopic</option>
                                 {subtopics.map((subtopic) => (
@@ -407,16 +407,16 @@ export default function Question() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-[#7c3aed] text-white py-3 rounded-lg font-semibold shadow 
-                                    hover:bg-[#6d28d9] transition disabled:opacity-40"
+                            className="w-full bg-primary text-white py-3 rounded-lg font-semibold shadow 
+                                    hover:bg-green-600 transition disabled:opacity-40"
                         >
                             {loading ? "Generating..." : "Generate Questions"}
                         </button>
 
                         <button
                             onClick={handleDownload}
-                            className="w-full bg-[#7c3aed] text-white py-3 rounded-lg font-semibold shadow 
-                                    hover:bg-[#6d28d9] transition"
+                            className="w-full bg-primary text-white py-3 rounded-lg font-semibold shadow 
+                                    hover:bg-green-600 transition"
                         >
                             Download PDF
                         </button>

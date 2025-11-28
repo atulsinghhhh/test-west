@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 
 
 
+import Navbar from "../components/Navbar";
+
 function SchoolPage() {
     const [tab, setTab] = useState("create");
     const navigate = useNavigate();
@@ -22,15 +24,7 @@ function SchoolPage() {
 
     return (
         <div className="h-screen w-screen bg-admin-bg flex flex-col">
-            <div className="bg-card border-b border-admin-border px-8 py-4">
-                <h1 className="text-2xl font-bold text-foreground">
-                    School Dashboard
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                    Manage Teacher, Manage Subject and view analytics
-                </p>
-                <button onClick={()=>navigate('/school/create/')}>Create</button>
-            </div>
+            <Navbar />
 
             <div className="grid grid-cols-4 border-b border-admin-border bg-admin-panel">
                 <button className={tabStyle("teacher")} onClick={() => setTab("teacher")}>

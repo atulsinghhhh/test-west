@@ -1,10 +1,11 @@
 import { Router } from "express"
 import { verifyJwt } from "../middlewares/auth.middleware.js";
-import { downloadPaperPDF, downloadQuestionPDF, fetchClassAnalytics, fetchPapers, fetchQuestions, fetchStudentSubmissions, fetchTeacherSchool, generatepaperAI, generateQuestionAI, getTeacherChapters, getTeacherGrade, getTeacherQuota, getTeacherSubjects, getTeacherSubtopics, getTeacherTopics, publishedQuestions, publishPaper } from "../controllers/teacher.controller.js";
+import { downloadPaperPDF, downloadQuestionPDF, fetchClassAnalytics, fetchPapers, fetchQuestions, fetchStudentSubmissions, fetchTeacherSchool, generatepaperAI, generateQuestionAI, getTeacherChapters, getTeacherGrade, getTeacherQuota, getTeacherSchoolGrades, getTeacherSubjects, getTeacherSubtopics, getTeacherTopics, publishedQuestions, publishPaper } from "../controllers/teacher.controller.js";
 
 const router = Router();
 
 router.get("/grade", verifyJwt, getTeacherGrade);
+router.get("/school/grades", verifyJwt, getTeacherSchoolGrades);
 router.get("/subjects", verifyJwt, getTeacherSubjects);
 router.get("/subjects/:subjectId/chapters", verifyJwt, getTeacherChapters);
 router.get("/chapters/:chapterId/topics", verifyJwt, getTeacherTopics);
