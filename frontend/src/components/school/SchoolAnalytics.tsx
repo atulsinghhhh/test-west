@@ -16,9 +16,9 @@ interface TeacherStats {
 }
 
 interface SchoolStats {
-    totalteacher: number;
-    totalStudents: number;
-    totalUsage: {
+    totals: {
+        totalTeachers: number;
+        totalStudents: number;
         totalQuestionLimit: number;
         totalQuestionCount: number;
         totalQuestionRemaining: number;
@@ -73,33 +73,33 @@ const SchoolAnalytics = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-card p-4 rounded-lg border border-border">
                     <h3 className="text-sm font-medium text-muted-foreground">Total Teachers</h3>
-                    <p className="text-2xl font-bold text-foreground">{stats.totalteacher}</p>
+                    <p className="text-2xl font-bold text-foreground">{stats.totals.totalTeachers}</p>
                 </div>
                 <div className="bg-card p-4 rounded-lg border border-border">
                     <h3 className="text-sm font-medium text-muted-foreground">Total Students</h3>
-                    <p className="text-2xl font-bold text-foreground">{stats.totalStudents}</p>
+                    <p className="text-2xl font-bold text-foreground">{stats.totals.totalStudents}</p>
                 </div>
                 <div className="bg-card p-4 rounded-lg border border-border">
                     <h3 className="text-sm font-medium text-muted-foreground">Questions Used</h3>
                     <p className="text-2xl font-bold text-foreground">
-                        {stats.totalUsage.totalQuestionCount} / {stats.totalUsage.totalQuestionLimit}
+                        {stats.totals.totalQuestionCount} / {stats.totals.totalQuestionLimit}
                     </p>
                     <div className="w-full bg-secondary h-2 rounded-full mt-2">
                         <div 
                             className="bg-primary h-2 rounded-full" 
-                            style={{ width: `${(stats.totalUsage.totalQuestionCount / stats.totalUsage.totalQuestionLimit) * 100}%` }}
+                            style={{ width: `${(stats.totals.totalQuestionCount / stats.totals.totalQuestionLimit) * 100}%` }}
                         />
                     </div>
                 </div>
                 <div className="bg-card p-4 rounded-lg border border-border">
                     <h3 className="text-sm font-medium text-muted-foreground">Papers Used</h3>
                     <p className="text-2xl font-bold text-foreground">
-                        {stats.totalUsage.totalPaperCount} / {stats.totalUsage.totalPaperLimit}
+                        {stats.totals.totalPaperCount} / {stats.totals.totalPaperLimit}
                     </p>
                     <div className="w-full bg-secondary h-2 rounded-full mt-2">
                         <div 
                             className="bg-primary h-2 rounded-full" 
-                            style={{ width: `${(stats.totalUsage.totalPaperCount / stats.totalUsage.totalPaperLimit) * 100}%` }}
+                            style={{ width: `${(stats.totals.totalPaperCount / stats.totals.totalPaperLimit) * 100}%` }}
                         />
                     </div>
                 </div>

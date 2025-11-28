@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthProvider";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const TeacherStudentForm = () => {
+const SchoolStudentForm = () => {
     const { baseurl } = useAuth();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
@@ -28,7 +28,7 @@ const TeacherStudentForm = () => {
         const fetchGrade = async () => {
             try {
                 // Fetch all grades available in the school
-                const response = await axios.get(`${baseurl}/teacher/school/grades`, {
+                const response = await axios.get(`${baseurl}/school/grade`, {
                     withCredentials: true
                 });
                 if (response.data.success) {
@@ -53,7 +53,7 @@ const TeacherStudentForm = () => {
 
         try {
             const response = await axios.post(
-                `${baseurl}/student/teacher/create`,
+                `${baseurl}/student/school/create`,
                 formData,
                 { withCredentials: true }
             );
@@ -61,7 +61,7 @@ const TeacherStudentForm = () => {
             if (response.data.success) {
                 setSuccess("Student created successfully!");
                 setFormData({ name: "", email: "", password: "", gradeId: "", section: "A" });
-                setTimeout(() => navigate("/teacher/students"), 1500);
+                setTimeout(() => navigate("/school/students"), 1500);
             }
         } catch (err: any) {
             console.error(err);
@@ -74,7 +74,7 @@ const TeacherStudentForm = () => {
     return (
         <div className="max-w-2xl mx-auto space-y-6">
             <button 
-                onClick={() => navigate("/teacher/students")}
+                onClick={() => navigate("/school/students")}
                 className="flex items-center text-muted-foreground hover:text-foreground transition-colors"
             >
                 <ArrowLeft size={20} className="mr-2" /> Back to Students
@@ -172,4 +172,4 @@ const TeacherStudentForm = () => {
     );
 };
 
-export default TeacherStudentForm;
+export default SchoolStudentForm;

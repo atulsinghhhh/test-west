@@ -44,28 +44,6 @@ function Navbar() {
                     </h1>
                 </div>
 
-                {/* Middle - Actions (Role Based) */}
-                {!isPublicPage && user && (
-                    <div className="hidden md:flex items-center gap-4">
-                        {user.role === 'school' && (
-                            <button 
-                                onClick={() => navigate("/school/create-student")}
-                                className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg font-medium transition-all"
-                            >
-                                <Plus size={18} /> Create Student
-                            </button>
-                        )}
-                        {user.role === 'teacher' && (
-                            <button 
-                                onClick={() => navigate("/teacher/publish")}
-                                className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg font-medium transition-all"
-                            >
-                                <Upload size={18} /> Publish Content
-                            </button>
-                        )}
-                         {/* Admin specific actions if needed */}
-                    </div>
-                )}
 
                 {/* Right - User & Theme */}
                 <div className="flex items-center gap-4">

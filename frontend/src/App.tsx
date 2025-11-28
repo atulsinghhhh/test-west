@@ -1,10 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom"
 import Signup from "./pages/Signup"
 import Login from "./pages/Login"
-import AdminPage from "./pages/AdminPage"
-import SchoolPage from "./pages/SchoolPage"
 import { ProtectedRoute } from "./components/ProtectRoute"
-import SchoolForm from "./pages/SchoolForm"
+// import SchoolForm from "./pages/SchoolForm"
 import StudentLayout from "./components/student/StudentLayout"
 import StudentDashboard from "./components/student/StudentDashboard"
 import StudentPapers from "./components/student/StudentPapers"
@@ -17,7 +15,22 @@ import StudentPractice from "./components/student/StudentPractice"
 import PracticeSession from "./components/student/PracticeSession"
 import LandingPage from "./pages/LandingPage"
 import { ThemeProvider } from "./context/ThemeContext"
-import StudentForm from "./pages/StudentForm"
+// 
+// Admin Components
+import AdminLayout from "./components/Admin/AdminLayout"
+import CreateSchool from "./components/Admin/CreateSchool"
+import ViewSchool from "./components/Admin/ViewSchool"
+import Stats from "./components/Admin/Stats"
+
+// School Components
+import SchoolLayout from "./components/school/SchoolLayout"
+import CreateTeacher from "./components/school/CreateTeacher"
+import ViewTeacher from "./components/school/ViewTeacher"
+import ManageSubject from "./components/school/ManageSubject"
+import SchoolAnalytics from "./components/school/SchoolAnalytics"
+
+import SchoolStudents from "./components/school/SchoolStudents"
+import SchoolStudentForm from "./components/school/SchoolStudentForm"
 
 // Teacher Components
 import TeacherLayout from "./components/teacher/TeacherLayout"
@@ -38,31 +51,40 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
-          <Route
-              path="/admin/dashboard"
-              element={
-                <ProtectedRoute allowedRoles={["admin"]}>
-                  <AdminPage />
-                </ProtectedRoute>
-              }
-            />
-          <Route 
-            path="/school/dashboard" 
-            element={
-              <ProtectedRoute allowedRoles={['school']}>
-                <SchoolPage/>
-              </ProtectedRoute>
-          } />
-          <Route path="/school/create/" element={
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<CreateSchool />} />
+            <Route path="schools" element={<ViewSchool />} />
+            <Route path="analytics" element={<Stats />} />
+          </Route>
+
+          {/* School Routes */}
+          <Route path="/school" element={
+            <ProtectedRoute allowedRoles={['school']}>
+              <SchoolLayout/>
+            </ProtectedRoute>
+          }>
+            <Route index element={<Navigate to="create-teacher" replace />} />
+            <Route path="create-teacher" element={<CreateTeacher />} />
+            <Route path="view-teachers" element={<ViewTeacher />} />
+            <Route path="create-student" element={<SchoolStudentForm />} />
+            <Route path="students" element={<SchoolStudents />} />
+            <Route path="subjects" element={<ManageSubject />} />
+            <Route path="analytics" element={<SchoolAnalytics />} />
+          </Route>
+
+          {/* Standalone School Routes (if needed outside layout, or integrate them) */}
+           {/* <Route path="/school/create/" element={
             <ProtectedRoute allowedRoles={['school']}>
               <SchoolForm/>
             </ProtectedRoute>
-          }/>
-          <Route path="/school/create-student" element={
-            <ProtectedRoute allowedRoles={['school']}>
-              <StudentForm/>
-            </ProtectedRoute>
-          }/>
+          }/> */}
 
           {/* Teacher Routes */}
           <Route path="/teacher" element={
