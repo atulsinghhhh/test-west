@@ -1,128 +1,185 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../../context/AuthProvider";
 import axios from "axios";
+import { Loader2 } from "lucide-react";
+import { useAuth } from "../../context/AuthProvider";
 
-interface IQuestion {
-   _id: string;
-   batchId: string;
-   isPublish: boolean;
-   questionType: string;
-   difficulty: string;
-   noofQuestion: number; 
+interface AnalyticsOverview {
+    totalAttempts: number;
+    avgScore: number;
+    highestScore: number;
+    lowestScore: number;
 }
 
-function QuestionPublish() {
-    const { baseurl } = useAuth();
-    const [Questions, setQuestions] = useState<IQuestion[]>([]);
-    const [loading,setLoading] = useState<boolean>(false);
-    const [error,setError] = useState<string>("");
-    const [message,setMessage] = useState<string>("");
+interface SubjectAnalytics {
+    subjectName: string;
+    avgScore: number;
+    totalAttempts: number;
+}
 
-    useEffect(()=>{
-        const fetchQuestions = async () =>{
-            setLoading(true);
-            try{
-                const response =await axios.get(`${baseurl}/teacher/questions`,{
-                    withCredentials:true
-                });
-                if(response.data.success){
-                    setQuestions(response.data.questions);
-                }else{
-                    setError("Failed to fetch questions");
+interface Submission {
+    _id: string;
+    studentId: {
+        name: string;
+        email: string;
+    };
+    paperId: {
+        paperType: string;
+        testType: string;
+    };
+    subjectId: {
+        subjectName: string;
+    };
+    totalMarks: number;
+    obtainedMarks: number;
+    percentage: number;
+    createdAt: string;
+}
+
+const TeacherAnalytics = () => {
+    const { baseurl } = useAuth();
+    const [overview, setOverview] = useState<AnalyticsOverview | null>(null);
+    const [subjectStats, setSubjectStats] = useState<SubjectAnalytics[]>([]);
+    const [submissions, setSubmissions] = useState<Submission[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [overviewRes, submissionsRes] = await Promise.all([
+                    axios.get(`${baseurl}/teacher/analytics/overview`,{withCredentials: true}),
+                    axios.get(`${baseurl}/teacher/analytics/submissions`,{withCredentials: true})
+                ]);
+
+                if (overviewRes.data.success) {
+                    setOverview(overviewRes.data.analytics);
+                    setSubjectStats(overviewRes.data.subjectAnalytics);
                 }
 
-                console.log("fetch the data: ", response.data.questions);
-            }catch(error){
-                console.log("Error fetching questions: ", error);
-                setError("Failed to fetch questions");
-            } finally{
+                if (submissionsRes.data.success) {
+                    setSubmissions(submissionsRes.data.attempts);
+                }
+
+            } catch (error) {
+                console.error("Error fetching teacher analytics:", error);
+            } finally {
                 setLoading(false);
             }
-        }
-        fetchQuestions();
-    },[]);
+        };
 
-    const handlePublish = async (batchId:string)=>{
-        try {
-            await axios.put(`${baseurl}/teacher/question/publish/${batchId}`,{},{
-                withCredentials:true
-            })
-            setMessage("Question published successfully");
-            setQuestions((prev)=>(
-                prev.map((q)=>(
-                    q.batchId === batchId ? {...q,isPublish:true}:q
-                ))
-            ))
-        } catch (error) {
-            console.log("Error publishing question: ", error);
-            setError("Failed to publish question");
-        }
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex h-full items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
     }
-  return (
-     <div className="p-6 bg-[--color-admin-bg] min-h-screen text-[--color-foreground]">
-            <h1 className="text-2xl font-semibold mb-6 text-white">📝 Teacher Question Analytics</h1>
 
-            {loading && <p className="text-[--color-primary]">Loading questions...</p>}
-            {error && <p className="text-red-500 font-medium">{error}</p>}
-            {message && <p className="text-green-500 font-medium">{message}</p>}
+    return (
+        <div className="p-6 space-y-6 bg-admin-bg min-h-screen text-foreground">
+            <h2 className="text-2xl font-bold">Class Analytics</h2>
 
-            {!loading && Questions.length > 0 && (
-                <div className="overflow-x-auto mt-4">
-                    <table className="w-full rounded-lg bg-[--color-card] text-white">
-                        <thead>
-                            <tr className="bg-[--color-admin-panel] text-[--color-muted-foreground]">
-                                <th className="p-3 text-left">Batch ID</th>
-                                <th className="p-3 text-left">Question Type</th>
-                                <th className="p-3 text-left">Difficulty</th>
-                                <th className="p-3 text-left">No. of Questions</th>
-                                <th className="p-3 text-left">Status</th>
-                                <th className="p-3 text-left">Action</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {Questions.map((q) => (
-                                <tr
-                                    key={q.batchId}
-                                    className="hover:bg-[--color-admin-hover] transition text-white"
-                                >
-                                    <td className="p-3">{q.batchId}</td>
-                                    <td className="p-3">{q.questionType}</td>
-                                    <td className="p-3">{q.difficulty}</td>
-                                    <td className="p-3">{q.noofQuestion}</td>
-
-                                    <td className="p-3">
-                                        {q.isPublish ? (
-                                            <span className="text-green-400 font-semibold">Published</span>
-                                        ) : (
-                                            <span className="text-red-400 font-semibold">Not Published</span>
-                                        )}
-                                    </td>
-
-                                    <td className="p-3">
-                                        <button
-                                            onClick={() => handlePublish(q.batchId)}
-                                            className={`px-4 py-1.5 rounded-lg font-medium transition 
-                                                ${q.isPublish
-                                                    ? "bg-red-600 hover:bg-red-700"
-                                                    : "bg-[--color-primary] hover:bg-green-700"
-                                                }`}
-                                        >
-                                            {q.isPublish ? "Unpublish" : "Publish"}
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+            {/* Overview Cards */}
+            {overview && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="bg-card p-4 rounded-lg border border-border">
+                        <h3 className="text-sm font-medium text-muted-foreground">Total Attempts</h3>
+                        <p className="text-2xl font-bold">{overview.totalAttempts}</p>
+                    </div>
+                    <div className="bg-card p-4 rounded-lg border border-border">
+                        <h3 className="text-sm font-medium text-muted-foreground">Average Score</h3>
+                        <p className="text-2xl font-bold">{overview.avgScore.toFixed(1)}%</p>
+                    </div>
+                    <div className="bg-card p-4 rounded-lg border border-border">
+                        <h3 className="text-sm font-medium text-muted-foreground">Highest Score</h3>
+                        <p className="text-2xl font-bold text-green-500">{overview.highestScore.toFixed(1)}%</p>
+                    </div>
+                    <div className="bg-card p-4 rounded-lg border border-border">
+                        <h3 className="text-sm font-medium text-muted-foreground">Lowest Score</h3>
+                        <p className="text-2xl font-bold text-red-500">{overview.lowestScore.toFixed(1)}%</p>
+                    </div>
                 </div>
             )}
 
-            {!loading && Questions.length === 0 && (
-                <p className="text-[--color-muted-foreground] mt-4">No questions found.</p>
-            )}
-        </div>
-  )
-}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-card rounded-lg border border-border p-4">
+                    <h3 className="font-semibold mb-4">Subject Performance</h3>
+                    <div className="space-y-4">
+                        {subjectStats.map((sub, index) => (
+                            <div key={index} className="space-y-1">
+                                <div className="flex justify-between text-sm">
+                                    <span>{sub.subjectName}</span>
+                                    <span>{sub.avgScore.toFixed(1)}%</span>
+                                </div>
+                                <div className="w-full bg-secondary h-2 rounded-full">
+                                    <div 
+                                        className="bg-primary h-2 rounded-full" 
+                                        style={{ width: `${sub.avgScore}%` }}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                        {subjectStats.length === 0 && <p className="text-muted-foreground">No data available</p>}
+                    </div>
+                </div>
+            </div>
 
-export default QuestionPublish
+            {/* Submissions Table */}
+            <div className="bg-card rounded-lg border border-border overflow-hidden">
+                <div className="p-4 border-b border-border">
+                    <h3 className="font-semibold">Recent Student Submissions</h3>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-secondary text-muted-foreground">
+                            <tr>
+                                <th className="px-4 py-3">Student</th>
+                                <th className="px-4 py-3">Paper Type</th>
+                                <th className="px-4 py-3">Subject</th>
+                                <th className="px-4 py-3">Score</th>
+                                <th className="px-4 py-3">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                            {submissions.map((sub) => (
+                                <tr key={sub._id} className="hover:bg-secondary/50">
+                                    <td className="px-4 py-3">
+                                        <div className="font-medium">{sub.studentId?.name || "Unknown"}</div>
+                                        <div className="text-xs text-muted-foreground">{sub.studentId?.email}</div>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <span className="capitalize">{sub.paperId?.paperType || "N/A"}</span>
+                                        <span className="text-xs text-muted-foreground block">{sub.paperId?.testType}</span>
+                                    </td>
+                                    <td className="px-4 py-3">{sub.subjectId?.subjectName || "N/A"}</td>
+                                    <td className="px-4 py-3">
+                                        <div className="font-bold">
+                                            {sub.obtainedMarks}/{sub.totalMarks}
+                                        </div>
+                                        <div className={`text-xs ${sub.percentage >= 40 ? 'text-green-500' : 'text-red-500'}`}>
+                                            {sub.percentage.toFixed(1)}%
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3 text-muted-foreground">
+                                        {new Date(sub.createdAt).toLocaleDateString()}
+                                    </td>
+                                </tr>
+                            ))}
+                            {submissions.length === 0 && (
+                                <tr>
+                                    <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                                        No submissions found.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default TeacherAnalytics;

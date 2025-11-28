@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { addChapters, addGrade, addSubject, addSubtopic, addTeachers, addTopic, deleteChapter, deleteSubject, deleteSubtopic, deleteTopic, getChapters, getGrade, getSubjects, getSubtopics, getTeacher, getTopic } from "../controllers/school.controller.js";
+import { addChapters, addGrade, addSubject, addSubtopic, addTeachers, addTopic, deleteChapter, deleteSubject, deleteSubtopic, deleteTopic, getChapters, getGrade, getStatsSchool, getSubjects, getSubtopics, getTeacher, getTopic } from "../controllers/school.controller.js";
 import { verifyJwt } from "../middlewares/auth.middleware.js";
 
 const router = Router();
@@ -27,7 +27,7 @@ router.post("/topic/:topicId/subtopic", verifyJwt, addSubtopic);
 router.get("/topic/:topicId/subtopic", verifyJwt, getSubtopics);
 router.delete("/subtopic/:subtopicId", verifyJwt, deleteSubtopic);
 
-
+router.get("/stats", verifyJwt, getStatsSchool);
 
 
 export default router;

@@ -433,6 +433,7 @@ export const fetchQuestionSubmissions = async (req: RequestWithUser, res: Respon
     }
 };
 
+
 export const viewBatchResult = async (req: RequestWithUser, res: Response) => {
     try {
         const { batchId } = req.params;
@@ -452,9 +453,59 @@ export const viewBatchResult = async (req: RequestWithUser, res: Response) => {
 
 export const fetchStudentDashboardStats = async (req: RequestWithUser, res: Response) => {
     try {
-        // TODO: WRITE THE API FOR DASHBOARD STATS
+        const studentId = req.user?._id;
+        if (!studentId) return res.status(401).json({ success: false, message: "Unauthorized" });
+
+        const attempts = await Attempt.find({ studentId }).sort({ createdAt: -1 });
+
+        const totalAttempts = attempts.length;
+        const avgScore = totalAttempts > 0 
+            ? attempts.reduce((sum, att) => sum + att.percentage, 0) / totalAttempts 
+            : 0;
+
+        // Subject-wise performance
+        const subjectStats = await Attempt.aggregate([
+            { $match: { studentId: studentId } },
+            {
+                $group: {
+                    _id: "$subjectId",
+                    avgScore: { $avg: "$percentage" },
+                    totalAttempts: { $sum: 1 }
+                }
+            },
+            {
+                $lookup: {
+                    from: "subjects",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "subject"
+                }
+            },
+            { $unwind: "$subject" },
+            {
+                $project: {
+                    subjectName: "$subject.subjectName",
+                    avgScore: 1,
+                    totalAttempts: 1
+                }
+            }
+        ]);
+
+        const recentActivity = attempts.slice(0, 5);
+
+        return res.status(200).json({
+            success: true,
+            stats: {
+                totalAttempts,
+                avgScore,
+                subjectStats,
+                recentActivity
+            }
+        });
+
     } catch (error) {
-        
+        console.log("Error fetching student dashboard stats:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
 

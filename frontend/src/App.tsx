@@ -16,6 +16,8 @@ import PaperAttempt from "./components/student/PaperAttempt"
 import BatchAttempt from "./components/student/BatchAttempt"
 import BatchResult from "./components/student/BatchResult"
 import PaperResult from "./components/student/PaperResult"
+import StudentPractice from "./components/student/StudentPractice"
+import PracticeSession from "./components/student/PracticeSession"
 
 
 function App() {
@@ -64,7 +66,12 @@ function App() {
           <Route path="dashboard" element={<StudentDashboard />} />
           <Route path="papers" element={<StudentPapers />} />
           <Route path="paper/:paperId" element={<PaperAttempt />} />
-          <Route path="practice" element={<StudentQuestions />} />
+          
+          {/* Practice & Questions */}
+          <Route path="practice" element={<StudentPractice />} />
+          <Route path="practice/session" element={<PracticeSession />} />
+          <Route path="questions" element={<StudentQuestions />} />
+          
           <Route path="practice/:batchId" element={<BatchAttempt />} />
           <Route path="practice/result/:batchId" element={<BatchResult />} />
           <Route path="paper/result/:paperId" element={<PaperResult />} />

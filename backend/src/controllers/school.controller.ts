@@ -172,9 +172,20 @@ export const getChapters = async (req: RequestWithUser, res: Response) => {
 
 export const deleteChapter = async (req: RequestWithUser, res: Response) => {
     try {
+        const { chapterId } = req.params;
+        const schoolId = req.user?._id;
 
+        const chapter = await Chapter.findOne({ _id: chapterId, schoolId });
+        if (!chapter) {
+            return res.status(404).json({ success: false, message: "Subtopic not found or unauthorized" });
+        }
+
+        await Chapter.deleteOne({ _id: chapterId });
+
+        return res.status(200).json({ success: true, message: "chapter deleted successfully" });
     } catch (error) {
-
+        console.log("Error deleting chapter:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 }
 
@@ -225,9 +236,20 @@ export const getSubjects = async (req: RequestWithUser, res: Response) => {
 
 export const deleteSubject = async (req: RequestWithUser, res: Response) => {
     try {
+            const { subjectId } = req.params;
+            const schoolId = req.user?._id;
 
-    } catch (error) {
+            const subject = await Subject.findOne({ _id: subjectId, schoolId });
+            if (!subject) {
+                return res.status(404).json({ success: false, message: "Subject not found or unauthorized" });
+            }
 
+            await Subject.deleteOne({ _id: subjectId });
+
+            return res.status(200).json({ success: true, message: "subject deleted successfully" });
+        } catch (error) {
+            console.log("Error deleting subject:", error);
+            return res.status(500).json({ success: false, message: "Internal server error" });
     }
 }
 
@@ -274,9 +296,20 @@ export const getTopic = async (req: RequestWithUser, res: Response) => {
 
 export const deleteTopic = async (req: RequestWithUser, res: Response) => {
     try {
+        const { topicId } = req.params;
+        const schoolId = req.user?._id;
 
+        const topic = await Topic.findOne({ _id: topicId, schoolId });
+        if (!topic) {
+            return res.status(404).json({ success: false, message: "Topic not found or unauthorized" });
+        }
+
+        await Topic.deleteOne({ _id: topicId });
+
+        return res.status(200).json({ success: true, message: "topic deleted successfully" });
     } catch (error) {
-
+        console.log("Error deleting topic:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 }
 
@@ -347,8 +380,60 @@ export const deleteSubtopic = async (req: RequestWithUser, res: Response) => {
 
 export const getStatsSchool = async(req: RequestWithUser,res: Response)=>{
     try {
-        
+        const schoolId = req.user?._id;
+
+        const teachers = await Teacher.find({school: schoolId})
+            .select("name email questionSchoolLimit paperSchoolLimit questionSchoolCount paperSchoolCount");
+        if(!teachers){
+            return res.status(404).json({success: false, message: "teachrr are not found"});
+        };
+
+        const stats = teachers.map(teacher =>{
+            const remainingQuestions = teacher.questionSchoolLimit - teacher.questionSchoolCount;
+            const remainingPapers = teacher.paperSchoolLimit - teacher.paperSchoolCount;
+
+            return {
+                _id: teacher._id,
+                name: teacher.name,
+                email: teacher.email,
+
+                questionLimit: teacher.questionSchoolLimit,
+                paperLimit: teacher.paperSchoolLimit,
+
+                questionCount: teacher.questionSchoolCount,
+                paperCount: teacher.paperSchoolCount,
+
+                remainingQuestions,
+                remainingPapers,
+            }
+        });
+        const totalteacher = teachers.length
+        const totalStudents = teachers.reduce((sum, s) => sum + (s.students?.length || 0), 0);
+        // TODO: fix the student are not showns;
+
+        const totalQuestionLimit = teachers.reduce((sum, s) => sum + s.questionSchoolLimit, 0);
+        const totalQuestionCount = teachers.reduce((sum, s) => sum + s.questionSchoolCount, 0);
+
+        const totalPaperLimit =teachers.reduce((sum, s) => sum + s.paperSchoolLimit, 0);
+        const totalPaperCount = teachers.reduce((sum, s) => sum + s.paperSchoolCount, 0);
+
+        return res.status(200).json({
+            success: true,
+            totalteacher,
+            totalStudents,
+            totalUsage: {
+                totalQuestionLimit,
+                totalQuestionCount,
+                totalQuestionRemaining: totalQuestionLimit - totalQuestionCount,
+
+                totalPaperLimit,
+                totalPaperCount,
+                totalPaperRemaining: totalPaperLimit - totalPaperCount,
+            },
+            teachers: stats
+        });
     } catch (error) {
-        
+        console.error("Error Occurring: ", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 }

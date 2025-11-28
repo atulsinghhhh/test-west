@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FileText, BookOpen, LogOut, Menu, X, User } from 'lucide-react';
+import { LayoutDashboard, FileText, BookOpen, LogOut, Menu, X, User, Target } from 'lucide-react';
+import { useAuth } from '../../context/AuthProvider';
+import axios from 'axios';
 
 const StudentLayout = () => {
+    const { baseurl,setUser,setIsLoggedIn } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const location = useLocation();
     const navigate = useNavigate();
@@ -10,14 +13,21 @@ const StudentLayout = () => {
     const menuItems = [
         { path: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/student/papers', icon: FileText, label: 'Papers' },
-        { path: '/student/practice', icon: BookOpen, label: 'Practice' },
+        { path: '/student/questions', icon: BookOpen, label: 'Question Bank' },
+        { path: '/student/practice', icon: Target, label: 'Practice Arena' },
     ];
 
-    const handleLogout = () => {
-        // Clear token and redirect
-        // Assuming token is stored in localStorage or cookie. 
-        // For now just redirect to login
-        navigate('/login');
+    const handleLogout = async() => {
+        try {
+            await axios.post(`${baseurl}/auth/logout`,{},{
+                withCredentials: true
+            });
+            setIsLoggedIn(false);
+            setUser(null);
+            navigate('/login');
+        } catch (error) {
+            console.log("falied to logout user!");
+        }
     };
 
     return (

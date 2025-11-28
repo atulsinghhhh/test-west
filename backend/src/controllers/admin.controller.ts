@@ -75,7 +75,7 @@ export const getadminstats = async (req: RequestWithUser,res: Response)=>{
         if(!schools){
             return res.status(404).json({success: false, message: "schools are not found"});
         }
-        console.log("school: ",schools);
+        // console.log("school: ",schools);
 
         const stats = schools.map(school => {
             const remainingQuestions = school.questionAdminLimit - school.questionAdminCount;

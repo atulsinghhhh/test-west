@@ -2,6 +2,7 @@ import { useState } from "react";
 import CreateSchool from "../components/Admin/CreateSchool";
 import ViewSchool from "../components/Admin/ViewSchool";
 import Stats from "../components/Admin/Stats";
+import Navbar from "../components/Navbar";
 
 function AdminPage() {
     const [tab, setTab] = useState("create");
@@ -20,12 +21,7 @@ function AdminPage() {
         
         {/* Header */}
         <div className="bg-card border-b border-admin-border px-8 py-4">
-            <h1 className="text-2xl font-bold text-foreground">
-                Admin Dashboard
-            </h1>
-            <p className="text-sm text-muted-foreground">
-                Manage schools and view analytics
-            </p>
+            <Navbar/>
         </div>
 
         {/* Tabs */}

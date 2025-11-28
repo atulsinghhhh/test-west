@@ -6,7 +6,8 @@ import { useNavigate } from "react-router-dom";
 // import TeacherAnalytics from "../components/teacher/TeacherAnalytics";
 // import QuestionPublish from "../components/teacher/TeacherAnalytics";
 // import PaperPublish from "../components/teacher/TeacherAnalytics";
-import QuestionPublish from "../components/teacher/TeacherAnalytics";
+// import QuestionPublish from "../components/teacher/QuestionPublish";
+import TeacherAnalytics from "../components/teacher/TeacherAnalytics";
 
 
 function TeacherPage() {
@@ -34,7 +35,7 @@ function TeacherPage() {
                 <RemainingQuota/>
             </div>
 
-            <div className="grid grid-cols-3 border-b border-admin-border bg-admin-panel">
+            <div className="grid grid-cols-4 border-b border-admin-border bg-admin-panel">
                 <button className={tabStyle("questions")} onClick={() => setTab("questions")}>
                     Question 
                 </button>
@@ -46,13 +47,17 @@ function TeacherPage() {
                 <button className={tabStyle("publish")} onClick={() => setTab("publish")}>
                     Publish
                 </button>
+
+                <button className={tabStyle("analytics")} onClick={() => setTab("analytics")}>
+                    Analytics
+                </button>
             </div>
 
             <div className="flex-1 overflow-y-auto bg-admin-bg">
                 { tab === "questions" && <Question/>}
                 { tab === "papers" && <PaperGenerator/>}
-                { tab === "publish" && <QuestionPublish/> }
-
+                {/* { tab === "publish" && <QuestionPublish/> } */}
+                { tab === "analytics" && <TeacherAnalytics/> }
             </div>
         </div>
     )
