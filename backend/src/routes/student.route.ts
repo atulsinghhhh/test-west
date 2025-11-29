@@ -23,7 +23,7 @@ const router = Router();
 
 router.post("/school/create", verifyJwt, studentCreatedBySchool);
 router.post("/teacher/create", verifyJwt, studentCreatedByTeacher);
-router.get("/student/", verifyJwt, fetchStudentsForSchool);
+router.get("/", verifyJwt, fetchStudentsForSchool);
 router.get("/teacher/", verifyJwt, fetchStudentsForTeacher);
 
 // Dashboard

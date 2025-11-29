@@ -8,6 +8,8 @@ import { Subject } from "../models/subject.model.js";
 import { Topic } from "../models/topic.model.js"
 import { Subtopic } from "../models/subtopic.model.js";
 import { Student } from "../models/student.model.js";
+import { Paper } from "../models/paper.model.js";
+import { Question } from "../models/question.model.js";
 
 
 export const addTeachers = async (req: RequestWithUser, res: Response) => {
@@ -390,16 +392,9 @@ export const getStatsSchool = async (req: RequestWithUser, res: Response) => {
             });
         }
 
-        // Fetch all teachers for this school
-        const teachers = await Teacher.find({ schoolId })
+        // Fetch all teachers for this school (using correct field name 'school')
+        const teachers = await Teacher.find({ school: schoolId })
             .select("name email questionSchoolLimit paperSchoolLimit questionSchoolCount paperSchoolCount");
-
-        if (!teachers || teachers.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: "No teachers found",
-            });
-        }
 
         // Prepare teacher-wise stats
         const stats = teachers.map((teacher) => {
@@ -427,11 +422,45 @@ export const getStatsSchool = async (req: RequestWithUser, res: Response) => {
 
         const totalStudents = await Student.countDocuments({ schoolId });
 
-        const totalQuestionLimit = teachers.reduce((sum, t) => sum + t.questionSchoolLimit, 0);
-        const totalQuestionCount = teachers.reduce((sum, t) => sum + t.questionSchoolCount, 0);
+        // Count actual papers and questions from database
+        const totalPaperCount = await Paper.countDocuments({ schoolId });
+        const totalQuestionCount = await Question.countDocuments({ schoolId });
+        const totalSubjectCount = await Subject.countDocuments({ schoolId });
 
+        const totalQuestionLimit = teachers.reduce((sum, t) => sum + t.questionSchoolLimit, 0);
         const totalPaperLimit = teachers.reduce((sum, t) => sum + t.paperSchoolLimit, 0);
-        const totalPaperCount = teachers.reduce((sum, t) => sum + t.paperSchoolCount, 0);
+
+
+        // Fetch Grade-wise Subject Distribution
+        const mongoose = await import('mongoose');
+        const gradeSubjects = await Subject.aggregate([
+            { $match: { schoolId: new mongoose.default.Types.ObjectId(schoolId) } },
+            {
+                $group: {
+                    _id: "$gradeId",
+                    subjects: { $push: "$subjectName" },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $lookup: {
+                    from: "grades",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "grade"
+                }
+            },
+            { $unwind: "$grade" },
+            {
+                $project: {
+                    gradeName: "$grade.gradeName",
+                    subjects: 1,
+                    count: 1
+                }
+            },
+            { $sort: { gradeName: 1 } }
+        ]);
+
 
         return res.status(200).json({
             success: true,
@@ -439,6 +468,7 @@ export const getStatsSchool = async (req: RequestWithUser, res: Response) => {
             totals: {
                 totalTeachers,
                 totalStudents,
+                totalSubjects: totalSubjectCount,
 
                 totalQuestionLimit,
                 totalQuestionCount,
@@ -450,6 +480,7 @@ export const getStatsSchool = async (req: RequestWithUser, res: Response) => {
             },
 
             teachers: stats,
+            gradeSubjects // Added this
         });
 
     } catch (error) {
@@ -460,3 +491,5 @@ export const getStatsSchool = async (req: RequestWithUser, res: Response) => {
         });
     }
 };
+
+

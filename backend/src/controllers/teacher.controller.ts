@@ -863,7 +863,7 @@ export const fetchClassAnalytics = async (req: RequestWithUser, res: Response) =
     try {
         const teacher = await getTeacherContext(req);
 
-        // Aggregate analytics
+        // Aggregate basic analytics
         const analytics = await Attempt.aggregate([
             { $match: { gradeId: teacher.gradeId } },
             {
@@ -872,18 +872,25 @@ export const fetchClassAnalytics = async (req: RequestWithUser, res: Response) =
                     totalAttempts: { $sum: 1 },
                     avgScore: { $avg: "$percentage" },
                     highestScore: { $max: "$percentage" },
-                    lowestScore: { $min: "$percentage" }
+                    lowestScore: { $min: "$percentage" },
+                    totalTimeTaken: { $sum: "$timeTaken" },
+                    avgTimeTaken: { $avg: "$timeTaken" }
                 }
             }
         ]);
 
+        // Subject-wise analytics with detailed metrics
         const subjectAnalytics = await Attempt.aggregate([
             { $match: { gradeId: teacher.gradeId } },
+            { $unwind: "$answers" },
             {
                 $group: {
                     _id: "$subjectId",
-                    avgScore: { $avg: "$percentage" },
-                    totalAttempts: { $sum: 1 }
+                    totalQuestions: { $sum: 1 },
+                    correctAnswers: { $sum: { $cond: ["$answers.isCorrect", 1, 0] } },
+                    incorrectAnswers: { $sum: { $cond: ["$answers.isCorrect", 0, 1] } },
+                    totalAttempts: { $addToSet: "$_id" },
+                    avgTimeTaken: { $avg: "$timeTaken" }
                 }
             },
             {
@@ -898,16 +905,213 @@ export const fetchClassAnalytics = async (req: RequestWithUser, res: Response) =
             {
                 $project: {
                     subjectName: "$subject.subjectName",
-                    avgScore: 1,
-                    totalAttempts: 1
+                    totalQuestions: 1,
+                    correctAnswers: 1,
+                    incorrectAnswers: 1,
+                    totalAttempts: { $size: "$totalAttempts" },
+                    accuracy: { 
+                        $multiply: [
+                            { $divide: ["$correctAnswers", "$totalQuestions"] }, 
+                            100
+                        ] 
+                    },
+                    avgTimeTaken: 1
                 }
             }
         ]);
 
+        // Student-wise performance for class insights
+        const studentPerformance = await Attempt.aggregate([
+            { $match: { gradeId: teacher.gradeId } },
+            {
+                $group: {
+                    _id: "$studentId",
+                    totalAttempts: { $sum: 1 },
+                    avgScore: { $avg: "$percentage" },
+                    scores: { $push: { score: "$percentage", date: "$createdAt" } }
+                }
+            },
+            {
+                $lookup: {
+                    from: "students",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "student"
+                }
+            },
+            { $unwind: "$student" },
+            {
+                $project: {
+                    studentName: "$student.name",
+                    studentEmail: "$student.email",
+                    totalAttempts: 1,
+                    avgScore: 1,
+                    scores: { $slice: ["$scores", -5] } // Last 5 attempts
+                }
+            },
+            { $sort: { avgScore: -1 } }
+        ]);
+
+        // Practice quiz analytics
+        const practiceAnalytics = await Attempt.aggregate([
+            { 
+                $match: { 
+                    gradeId: teacher.gradeId,
+                    batchId: { $exists: true, $ne: null } // Practice questions have batchId
+                } 
+            },
+            { $unwind: "$answers" },
+            {
+                $group: {
+                    _id: "$studentId",
+                    totalPracticeQuizzes: { $addToSet: "$batchId" },
+                    totalQuestionsAttempted: { $sum: 1 },
+                    correctAnswers: { $sum: { $cond: ["$answers.isCorrect", 1, 0] } },
+                    avgTimeTaken: { $avg: "$timeTaken" }
+                }
+            },
+            {
+                $lookup: {
+                    from: "students",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "student"
+                }
+            },
+            { $unwind: "$student" },
+            {
+                $project: {
+                    studentName: "$student.name",
+                    practiceQuizCount: { $size: "$totalPracticeQuizzes" },
+                    totalQuestionsAttempted: 1,
+                    correctAnswers: 1,
+                    practiceAccuracy: {
+                        $multiply: [
+                            { $divide: ["$correctAnswers", "$totalQuestionsAttempted"] },
+                            100
+                        ]
+                    },
+                    avgTimeTaken: 1
+                }
+            }
+        ]);
+
+        // Generate AI insights if there's data
+        let aiInsights = null;
+        if (analytics[0] && analytics[0].totalAttempts > 0) {
+            const analyticsData = analytics[0];
+            const classAvgScore = analyticsData.avgScore || 0;
+
+            // Prepare data for AI analysis
+            const analyticsPrompt = `
+Analyze the student's performance based on the following data:
+- Total submissions: ${analyticsData.totalAttempts}
+- Class average score: ${classAvgScore.toFixed(2)}%
+- Highest score: ${analyticsData.highestScore}%
+- Lowest score: ${analyticsData.lowestScore}%
+- Average time taken: ${analyticsData.avgTimeTaken || 0} seconds
+
+Subject-wise performance:
+${subjectAnalytics.map(s => `- ${s.subjectName}: ${s.totalQuestions} questions, ${s.correctAnswers} correct, ${s.incorrectAnswers} incorrect, Accuracy: ${s.accuracy.toFixed(2)}%`).join('\n')}
+
+Practice quiz data:
+${practiceAnalytics.length > 0 ? practiceAnalytics.map(p => `- ${p.studentName}: ${p.practiceQuizCount} quizzes, ${p.practiceAccuracy.toFixed(2)}% accuracy`).join('\n') : 'No practice data available'}
+
+Provide a concise and easy-to-understand summary including:
+1. Overall class performance rating (Excellent / Good / Average / Needs Improvement)
+2. Class strength areas
+3. Class weak areas
+4. Subject-wise insights with topics where students commonly make mistakes
+5. Practice habits analysis
+6. Simple actionable suggestions to improve class performance
+7. Recommended subjects/topics to focus on for faster improvement
+
+Format the response as JSON with these keys:
+{
+  "overallRating": "string",
+  "strengthAreas": ["string"],
+  "weakAreas": ["string"],
+  "trend": "string (Improving/Stable/Needs Attention)",
+  "subjectInsights": [{"subject": "string", "insight": "string"}],
+  "practiceHabits": "string",
+  "suggestions": ["string"]
+}
+`;
+
+            try {
+                const result = await genAI.models.generateContent({
+                    model: "gemini-1.5-flash",
+                    contents: [{ parts: [{ text: analyticsPrompt }] }],
+                });
+                let aiResponse = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                // console.log("[AI] Raw response (truncated 500 chars):", aiResponse.slice(0,500));
+                aiResponse = aiResponse.replace(/```json|```/g, "").trim();
+
+                const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    try {
+                        aiInsights = JSON.parse(jsonMatch[0]);
+                    } catch (parseErr) {
+                        console.warn("Failed to parse AI JSON insight", parseErr);
+                    }
+                } else {
+                    console.warn("[AI] No JSON object detected in response; falling back to heuristic insights.");
+                }
+            } catch (aiError) {
+                console.error("AI insights generation error:", aiError);
+                // Continue without AI insights if there's an error
+            }
+
+            if (!aiInsights) {
+                const overallPct = classAvgScore;
+                const overallRating = overallPct >= 85 ? "Excellent" : overallPct >= 70 ? "Good" : overallPct >= 50 ? "Average" : "Needs Improvement";
+                const strengthAreas = subjectAnalytics.filter(s => s.accuracy >= 80).map(s => s.subjectName);
+                const weakAreas = subjectAnalytics.filter(s => s.accuracy < 50).map(s => s.subjectName);
+                let trend: string = "Stable";
+                if (studentPerformance.length > 0) {
+                    const allScores = studentPerformance.flatMap(sp => sp.scores).sort((a,b)=> new Date(a.date).getTime() - new Date(b.date).getTime());
+                    if (allScores.length >= 4) {
+                        const firstHalf = allScores.slice(0, Math.floor(allScores.length/2)).reduce((sum,s)=> sum + s.score,0) / Math.floor(allScores.length/2);
+                        const secondHalf = allScores.slice(Math.floor(allScores.length/2)).reduce((sum,s)=> sum + s.score,0) / (allScores.length - Math.floor(allScores.length/2));
+                        const diff = secondHalf - firstHalf;
+                        if (diff > 5) trend = "Improving"; else if (diff < -5) trend = "Dropping"; else trend = "Stable";
+                    }
+                }
+                const suggestions: string[] = [];
+                if (weakAreas.length) suggestions.push(`Allocate revision sessions for: ${weakAreas.join(', ')}`);
+                if (overallRating === "Needs Improvement") suggestions.push("Introduce short targeted practice quizzes daily.");
+                if (overallRating === "Average") suggestions.push("Focus on error analysis and timed practice.");
+                if (strengthAreas.length) suggestions.push(`Leverage strong subjects (${strengthAreas.join(', ')}) to build confidence before tackling weaker ones.`);
+                suggestions.push("Track progress weekly; aim for +5% average score increment.");
+                aiInsights = {
+                    overallRating,
+                    strengthAreas,
+                    weakAreas,
+                    trend,
+                    subjectInsights: subjectAnalytics.map(s => ({
+                        subject: s.subjectName,
+                        insight: `Accuracy ${s.accuracy.toFixed(1)}%. Correct ${s.correctAnswers}/${s.totalQuestions}. Focus: ${s.accuracy < 60 ? 'Remediation' : 'Maintain performance'}`
+                    })),
+                    practiceHabits: practiceAnalytics.length ? "Students are engaging in practice; encourage spaced repetition." : "Low practice activity; schedule structured practice sessions.",
+                    suggestions
+                };
+            }
+        }
+
         return res.status(200).json({ 
             success: true, 
-            analytics: analytics[0] || { totalAttempts: 0, avgScore: 0, highestScore: 0, lowestScore: 0 },
-            subjectAnalytics 
+            analytics: analytics[0] || { 
+                totalAttempts: 0, 
+                avgScore: 0, 
+                highestScore: 0, 
+                lowestScore: 0,
+                totalTimeTaken: 0,
+                avgTimeTaken: 0
+            },
+            subjectAnalytics,
+            studentPerformance,
+            practiceAnalytics,
+            aiInsights
         });
     } catch (error) {
         console.log("Error fetching class analytics:", error);
