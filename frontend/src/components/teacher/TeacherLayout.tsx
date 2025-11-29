@@ -6,16 +6,28 @@ import {
     FileText, 
     BarChart3, 
     Menu,
-    Users
+    Users,
+    LogOut
 } from "lucide-react";
 import { useAuth } from "../../context/AuthProvider";
-import Navbar from "../Navbar";
+import axios from "axios";
 
 const TeacherLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const navigate = useNavigate();
     const location = useLocation();
-    const { user } = useAuth();
+    const { baseurl, user, setUser, setIsLoggedIn } = useAuth();
+
+    const handleLogout = async () => {
+        try {
+            await axios.post(`${baseurl}/auth/logout`, {}, { withCredentials: true });
+            setIsLoggedIn(false);
+            setUser(null);
+            navigate('/login');
+        } catch (error) {
+            console.error('Logout failed', error);
+        }
+    };
 
     const navItems = [
         { path: "/teacher/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -27,8 +39,6 @@ const TeacherLayout = () => {
 
     return (
         <div className="min-h-screen bg-admin-bg flex flex-col">
-            <Navbar />
-            
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar */}
                 <aside 
@@ -73,15 +83,16 @@ const TeacherLayout = () => {
 
                     <div className="p-4 border-t border-admin-border">
                         <div className={`flex items-center gap-3 ${!isSidebarOpen && "justify-center"}`}>
-                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                                {user?.name?.[0] || "T"}
-                            </div>
-                            {isSidebarOpen && (
-                                <div className="overflow-hidden">
-                                    <p className="text-sm font-medium truncate">{user?.name}</p>
-                                    <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-                                </div>
-                            )}
+                            
+                        </div>
+                        <div className="mt-3">
+                            <button
+                                onClick={handleLogout}
+                                className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-red-400 hover:bg-red-500/10 transition-colors"
+                            >
+                                <LogOut size={18} />
+                                {isSidebarOpen && <span className="font-medium">Logout</span>}
+                            </button>
                         </div>
                     </div>
                 </aside>

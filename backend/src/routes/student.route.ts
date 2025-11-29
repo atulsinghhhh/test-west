@@ -10,6 +10,7 @@ import {
     fetchQuestionSubmissions, 
     fetchQuestionsForBatch, 
     fetchStudentDashboardStats, 
+    fetchStudentProfile, 
     fetchStudentsForSchool, 
     fetchStudentsForTeacher, 
     studentCreatedBySchool, 
@@ -28,6 +29,7 @@ router.get("/teacher/", verifyJwt, fetchStudentsForTeacher);
 
 // Dashboard
 router.get("/dashboard", verifyJwt, fetchStudentDashboardStats);
+router.get("/me", verifyJwt, fetchStudentProfile);
 
 // Practice
 router.post("/practice/create", verifyJwt, createPracticeQuiz);

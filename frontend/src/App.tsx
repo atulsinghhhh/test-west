@@ -79,13 +79,6 @@ function App() {
             <Route path="analytics" element={<SchoolAnalytics />} />
           </Route>
 
-          {/* Standalone School Routes (if needed outside layout, or integrate them) */}
-           {/* <Route path="/school/create/" element={
-            <ProtectedRoute allowedRoles={['school']}>
-              <SchoolForm/>
-            </ProtectedRoute>
-          }/> */}
-
           {/* Teacher Routes */}
           <Route path="/teacher" element={
             <ProtectedRoute allowedRoles={['teacher']}>

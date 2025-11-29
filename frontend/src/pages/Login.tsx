@@ -48,8 +48,8 @@ function Login() {
                 setMessage("Login successful!");
 
                 if (res.data.user.role === "admin") navigate("/admin/dashboard");
-                if (res.data.user.role === "school") navigate("/school/dashboard");
-                if (res.data.user.role === "teacher") navigate("/teacher/dashboard");
+                if (res.data.user.role === "school") navigate("/school");
+                if (res.data.user.role === "teacher") navigate("/teacher");
                 if (res.data.user.role === "student") navigate("/student/dashboard");
 
             }
@@ -65,14 +65,14 @@ function Login() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#0d1117] text-white px-4">
-            <div className="w-full max-w-sm p-6 bg-[#161b22] rounded-xl shadow-xl border border-[#30363d]">
+        <div className="min-h-screen flex items-center justify-center bg-admin-bg text-foreground px-4">
+            <div className="w-full max-w-sm p-6 bg-admin-panel rounded-xl shadow-xl border border-admin-border">
 
-                <h1 className="text-2xl font-semibold text-center bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-semibold text-center bg-gradient-to-r from-primary to-green-400 bg-clip-text text-transparent">
                     Login
                 </h1>
 
-                {message && <p className="text-green-400 text-center mt-2">{message}</p>}
+                {message && <p className="text-primary text-center mt-2">{message}</p>}
                 {error && <p className="text-red-400 text-center mt-2">{error}</p>}
 
                 <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
@@ -83,7 +83,7 @@ function Login() {
                         placeholder="Email Address"
                         value={formState.email}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 rounded-lg bg-[#0d1117] border border-[#30363d] focus:border-blue-500 outline-none"
+                        className="w-full px-3 py-2 rounded-lg bg-admin-bg border border-admin-border focus:border-primary outline-none text-foreground placeholder:text-muted-foreground"
                     />
 
                     <input
@@ -92,23 +92,23 @@ function Login() {
                         placeholder="Password"
                         value={formState.password}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 rounded-lg bg-[#0d1117] border border-[#30363d] focus:border-purple-500 outline-none"
+                        className="w-full px-3 py-2 rounded-lg bg-admin-bg border border-admin-border focus:border-primary outline-none text-foreground placeholder:text-muted-foreground"
                     />
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 font-semibold disabled:opacity-40"
+                        className="w-full py-2 rounded-lg bg-primary text-admin-bg font-semibold hover:opacity-90 disabled:opacity-40 transition"
                     >
                         {loading ? "Logging in..." : "Login"}
                     </button>
 
                 </form>
 
-                <p className="text-center text-gray-400 text-sm mt-4">
+                <p className="text-center text-muted-foreground text-sm mt-4">
                     Don't have an account?{" "}
                     <span
-                        className="text-blue-400 cursor-pointer"
+                        className="text-primary cursor-pointer"
                         onClick={() => navigate("/signup")}
                     >
                         Sign Up

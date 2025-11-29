@@ -20,6 +20,9 @@ const TeacherStudents = () => {
     const [students, setStudents] = useState<Student[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [openFeedbackFor, setOpenFeedbackFor] = useState<string | null>(null);
+    const [feedbackText, setFeedbackText] = useState<string>("");
+    const [submitting, setSubmitting] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -99,6 +102,25 @@ const TeacherStudents = () => {
                                     <td className="px-6 py-4 text-muted-foreground">{student.email}</td>
                                     <td className="px-6 py-4">{student.gradeId?.gradeName || "N/A"}</td>
                                     <td className="px-6 py-4">{student.section || "N/A"}</td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => navigate(`/teacher/student/${student._id}`)}
+                                                className="px-3 py-1 text-sm bg-secondary text-muted-foreground rounded-md"
+                                            >
+                                                View
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setOpenFeedbackFor(student._id);
+                                                    setFeedbackText("");
+                                                }}
+                                                className="px-3 py-1 text-sm bg-primary text-white rounded-md"
+                                            >
+                                                Give Feedback
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
                             ))}
                             {filteredStudents.length === 0 && (
@@ -112,6 +134,49 @@ const TeacherStudents = () => {
                     </table>
                 </div>
             </div>
+
+            {openFeedbackFor && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4">
+                    <div className="w-full max-w-md bg-admin-panel rounded-xl p-6 border border-admin-border">
+                        <h3 className="text-lg font-semibold text-foreground mb-2">Give Feedback</h3>
+                        <textarea
+                            value={feedbackText}
+                            onChange={(e) => setFeedbackText(e.target.value)}
+                            rows={6}
+                            className="w-full bg-admin-bg border border-admin-border rounded-md p-3 text-foreground placeholder:text-muted-foreground"
+                            placeholder="Write feedback for student — also used for AI insights"
+                        />
+                        <div className="flex justify-end gap-2 mt-4">
+                            <button
+                                onClick={() => { setOpenFeedbackFor(null); setFeedbackText(""); }}
+                                className="px-4 py-2 rounded-md bg-secondary text-muted-foreground"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    if (!feedbackText.trim()) return;
+                                    setSubmitting(true);
+                                    try {
+                                        await axios.post(`${baseurl}/teacher/student/${openFeedbackFor}/feedback`, { feedback: feedbackText }, { withCredentials: true });
+                                        // optimistic UI: close modal
+                                        setOpenFeedbackFor(null);
+                                        setFeedbackText("");
+                                        // Optionally refetch students or show toast — simple console for now
+                                        console.log('Feedback submitted');
+                                    } catch (err) {
+                                        console.error('Failed to submit feedback', err);
+                                    } finally { setSubmitting(false); }
+                                }}
+                                className="px-4 py-2 rounded-md bg-primary text-white disabled:opacity-50"
+                                disabled={submitting}
+                            >
+                                {submitting ? 'Sending...' : 'Send Feedback'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

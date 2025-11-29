@@ -57,6 +57,7 @@ const TeacherStudentForm = () => {
                 formData,
                 { withCredentials: true }
             );
+            console.log("Response: ",response.data);
 
             if (response.data.success) {
                 setSuccess("Student created successfully!");

@@ -12,6 +12,15 @@ const studentSchema =  new Schema({
     section: { type: String },
     schoolId: { type: mongoose.Schema.Types.ObjectId, ref: "School"},
     teacherId: { type: mongoose.Schema.Types.ObjectId, ref: "Teacher"},
+    feedbacks: [
+        {
+            teacherId: { type: mongoose.Schema.Types.ObjectId, ref: "Teacher" },
+            teacherName: { type: String },
+            feedbackText: { type: String },
+            aiInsights: { type: mongoose.Schema.Types.Mixed },
+            createdAt: { type: Date, default: Date.now }
+        }
+    ],
 
 },{timestamps: true})
 

@@ -15,6 +15,12 @@ interface TeacherStats {
     remainingPapers: number;
 }
 
+interface GradeSubject {
+    gradeName: string;
+    subjects: string[];
+    count: number;
+}
+
 interface SchoolStats {
     totals: {
         totalTeachers: number;
@@ -27,6 +33,7 @@ interface SchoolStats {
         totalPaperRemaining: number;
     };
     teachers: TeacherStats[];
+    gradeSubjects: GradeSubject[];
 }
 
 const SchoolAnalytics = () => {
@@ -102,6 +109,34 @@ const SchoolAnalytics = () => {
                             style={{ width: `${(stats.totals.totalPaperCount / stats.totals.totalPaperLimit) * 100}%` }}
                         />
                     </div>
+                </div>
+            </div>
+
+            {/* Subject Distribution per Grade */}
+            <div className="bg-card rounded-lg border border-border overflow-hidden">
+                <div className="p-4 border-b border-border">
+                    <h3 className="font-semibold text-foreground">Subjects per Grade</h3>
+                </div>
+                <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {stats.gradeSubjects && stats.gradeSubjects.length > 0 ? (
+                        stats.gradeSubjects.map((gs, index) => (
+                            <div key={index} className="bg-secondary/30 p-4 rounded-lg border border-border/50">
+                                <div className="flex justify-between items-center mb-2">
+                                    <h4 className="font-bold text-foreground">{gs.gradeName}</h4>
+                                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">{gs.count} Subjects</span>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {gs.subjects.map((subj, idx) => (
+                                        <span key={idx} className="text-xs bg-card border border-border px-2 py-1 rounded text-muted-foreground">
+                                            {subj}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-muted-foreground col-span-full text-center py-4">No subject data available.</p>
+                    )}
                 </div>
             </div>
 

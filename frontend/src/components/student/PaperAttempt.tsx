@@ -47,42 +47,17 @@ const PaperAttempt = () => {
 
     const fetchPaper = async () => {
         try {
-            // We need an endpoint to fetch a single paper details for attempting
-            // Currently we only have fetchPublishedPapers (list).
-            // We need GET /student/paper/:paperId
-            // Wait, I might have missed this endpoint too?
-            // Let me check student.controller.ts
-            // I have viewPaperResult, but that's for results.
-            // I don't have a specific endpoint to fetch a paper for attempting if it's not in the published list details.
-            // But fetchPublishedPapers returns the list. I can filter from there if I had the list, but better to fetch one.
-            // Actually, `attemptPaper` is the POST.
-            // I need to fetch the paper content (questions) to show them!
-            // The `fetchPublishedPapers` returns the list of papers. Does it include the full questions array?
-            // If so, I can just use that. If not, I need a new endpoint.
-            // Let's assume for now I can fetch it or I need to add it.
-            // Looking at `fetchPublishedPapers` in controller: `Paper.find(...)`. It returns everything by default unless projected.
-            // So `fetchPublishedPapers` returns ALL papers with ALL questions. That might be heavy but it works for now.
-            // But I need to fetch a *specific* paper by ID here.
-            // I'll assume I can fetch it via a new endpoint or filter from the list if I store it in context (but I don't).
-            // I should probably add `GET /student/paper/:paperId` to be safe and clean.
-            // For now, I'll try to use a new endpoint `GET /student/paper/:paperId/content` or similar.
-            // Or I can use `fetchPublishedPapers` and filter client side if the list is small.
-            // Let's add the endpoint to backend quickly if needed.
-            // Actually, let's check if I can just use `fetchPublishedPapers` and find the one I need.
-            // But that fetches ALL papers. Not efficient.
-            // I'll add `fetchPaperContent` to backend.
-            
-            // WAIT! I can't keep switching context.
-            // I'll implement the UI assuming the endpoint exists: `/api/student/paper/:paperId/content`
-            // And I will add it to the backend in the next step.
-            
             const response = await axios.get(`${baseurl}/student/paper/${paperId}/content`, { withCredentials: true });
             if (response.data.success) {
                 setPaper(response.data.paper);
                 setTimeLeft(response.data.paper.duration * 60);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error fetching paper", error);
+            if (error.response && (error.response.status === 403 || error.response.status === 400)) {
+                alert(error.response.data.message || "You have already attempted this paper.");
+                navigate('/student/papers'); // Redirect back to papers list
+            }
         } finally {
             setLoading(false);
         }

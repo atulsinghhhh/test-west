@@ -28,7 +28,8 @@ const StudentQuestions = () => {
         try {
             const response = await axios.get(`${baseurl}/student/questions/published`, { withCredentials: true });
             if (response.data.success) {
-                setBatches(response.data.batches);
+                // Ensure batches is always an array to avoid runtime errors
+                setBatches(response.data.batches || []);
             }
         } catch (err) {
             setError('Failed to load practice questions. Please try again.');
@@ -65,7 +66,7 @@ const StudentQuestions = () => {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {batches.map((batch) => (
+                {(batches || []).map((batch) => (
                     <div key={batch._id} className="bg-[var(--color-card)] rounded-xl border border-[var(--color-admin-border)] overflow-hidden hover:border-[var(--color-primary)]/50 transition-all duration-300 group">
                         <div className="p-6">
                             <div className="flex items-start justify-between mb-4">

@@ -161,167 +161,166 @@ function PaperGenerator() {
   }
 
   return (
-  <div className="max-w-4xl mx-auto p-6 rounded-lg bg-admin-bg text-foreground">
-      <h2 className="text-2xl font-bold mb-4">Generate Question Paper</h2>
+    <div className="min-h-screen bg-admin-bg text-foreground p-6 space-y-6">
 
-      {error && <p className="text-red-500 mb-2">{error}</p>}
-      {message && <p className="text-green-500 mb-2">{message}</p>}
+      {error && <p className="text-sm text-red-400 bg-red-500/10 p-3 rounded-lg">{error}</p>}
+      {message && <p className="text-sm text-green-400 bg-green-500/10 p-3 rounded-lg">{message}</p>}
 
-      
-      <form
-        onSubmit={handleGenerate}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4"
-      >
-          <div className="md:col-span-2">
-        <label className="block mb-1 text-sm">School Name</label>
-        <input
-          type="text"
-          value={schoolName}
-          readOnly
-          className="w-full p-2 rounded font-semibold bg-admin-panel text-foreground border border-admin-border cursor-not-allowed"
-        />
-      </div>
+      <section className="bg-card border border-admin-border rounded-xl p-6">
+        <h2 className="text-xl font-semibold mb-4">Generate Question Paper</h2>
+        
+        <form onSubmit={handleGenerate} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <label className="block text-sm text-muted-foreground mb-1">School Name</label>
+              <input
+                type="text"
+                value={schoolName}
+                readOnly
+                className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none"
+              />
+            </div>
 
-        {/* Subject */}
-        <div>
-          <label className="block mb-1 text-sm">Select Subject</label>
-          <select
-            className="w-full p-2 rounded bg-admin-panel text-foreground border border-admin-border"
-            value={subjectId}
-            onChange={(e) => handleSubjectChange(e.target.value)}
-          >
-            <option value="">Select Subject</option>
-            {subject.map((sub) => (
-              <option key={sub._id} value={sub._id}>
-                {sub.subjectName}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div>
+              <label className="block text-sm text-muted-foreground mb-1">Subject</label>
+              <select
+                className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                value={subjectId}
+                onChange={(e) => handleSubjectChange(e.target.value)}
+              >
+                <option value="">Select subject</option>
+                {subject.map((sub) => (
+                  <option key={sub._id} value={sub._id}>
+                    {sub.subjectName}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        {/* Chapter */}
-        <div>
-          <label className="block mb-1 text-sm">Select Chapter</label>
-          <select
-            className="w-full p-2 rounded bg-admin-panel text-foreground border border-admin-border"
-            value={chapterId}
-            onChange={(e) => setChapterId(e.target.value)}
-          >
-            <option value="">Select Chapter</option>
-            {chapter.map((ch) => (
-              <option key={ch._id} value={ch._id}>
-                {ch.chapterName}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div>
+              <label className="block text-sm text-muted-foreground mb-1">Chapter</label>
+              <select
+                className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                value={chapterId}
+                onChange={(e) => setChapterId(e.target.value)}
+                disabled={!subjectId}
+              >
+                <option value="">Select chapter</option>
+                {chapter.map((ch) => (
+                  <option key={ch._id} value={ch._id}>
+                    {ch.chapterName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-        {/* Duration */}
-        <div>
-          <label className="block mb-1 text-sm">Duration (minutes)</label>
-          <input
-            type="number"
-            className="w-full p-2 rounded bg-admin-panel text-foreground border border-admin-border"
-            value={paperData.duration}
-            onChange={(e) =>
-              setPaperData({ ...paperData, duration: Number(e.target.value) })
-            }
-          />
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm text-muted-foreground mb-1">Duration (minutes)</label>
+              <input
+                type="number"
+                className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                value={paperData.duration}
+                onChange={(e) =>
+                  setPaperData({ ...paperData, duration: Number(e.target.value) })
+                }
+              />
+            </div>
 
-        {/* Total Marks */}
-        <div>
-          <label className="block mb-1 text-sm">Total Marks</label>
-          <input
-            type="number"
-            className="w-full p-2 rounded bg-admin-panel text-foreground border border-admin-border"
-            value={paperData.totalMarks}
-            onChange={(e) =>
-              setPaperData({ ...paperData, totalMarks: Number(e.target.value) })
-            }
-          />
-        </div>
+            <div>
+              <label className="block text-sm text-muted-foreground mb-1">Total Questions</label>
+              <input
+                type="number"
+                className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                value={paperData.totalQuestion}
+                onChange={(e) =>
+                  setPaperData({
+                    ...paperData,
+                    totalQuestion: Number(e.target.value),
+                  })
+                }
+              />
+            </div>
 
-        {/* Total Questions */}
-        <div>
-          <label className="block mb-1 text-sm">Total Questions</label>
-          <input
-            type="number"
-            className="w-full p-2 rounded bg-admin-panel text-foreground border border-admin-border"
-            value={paperData.totalQuestion}
-            onChange={(e) =>
-              setPaperData({
-                ...paperData,
-                totalQuestion: Number(e.target.value),
-              })
-            }
-          />
-        </div>
+            <div>
+              <label className="block text-sm text-muted-foreground mb-1">Total Marks</label>
+              <input
+                type="number"
+                className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                value={paperData.totalMarks}
+                onChange={(e) =>
+                  setPaperData({ ...paperData, totalMarks: Number(e.target.value) })
+                }
+              />
+            </div>
+          </div>
 
-        {/* Instructions */}
-        <div className="md:col-span-2">
-          <label className="block mb-1 text-sm">Instructions</label>
-          <textarea
-            className="w-full p-2 rounded bg-admin-panel text-foreground border border-admin-border"
-            rows={3}
-            value={paperData.Instruction}
-            onChange={(e) =>
-              setPaperData({ ...paperData, Instruction: e.target.value })
-            }
-          />
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-muted-foreground mb-1">Paper Type</label>
+              <select
+                className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                value={paperData.paperType}
+                onChange={(e) =>
+                  setPaperData({ ...paperData, paperType: e.target.value })
+                }
+              >
+                <option value="">Select type</option>
+                <option value="chapterwise">Chapterwise</option>
+                <option value="subjectwise">Subjectwise</option>
+              </select>
+            </div>
 
-        {/* Paper Type */}
-        <div>
-          <label className="block mb-1 text-sm">Paper Type</label>
-          <select
-            className="w-full p-2 rounded bg-admin-panel text-foreground border border-admin-border"
-            value={paperData.paperType}
-            onChange={(e) =>
-              setPaperData({ ...paperData, paperType: e.target.value })
-            }
-          >
-            <option value="">Select Type</option>
-            <option value="chapterwise">Chapterwise</option>
-            <option value="subjectwise">Subjectwise</option>
-          </select>
-        </div>
+            <div>
+              <label className="block text-sm text-muted-foreground mb-1">Test Type</label>
+              <select
+                className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                value={paperData.testType}
+                onChange={(e) =>
+                  setPaperData({ ...paperData, testType: e.target.value })
+                }
+              >
+                <option value="">Select test type</option>
+                <option value="Unit Test">Unit Test</option>
+                <option value="Mid Term">Mid Term</option>
+                <option value="Final">Final</option>
+              </select>
+            </div>
+          </div>
 
-        {/* Test Type */}
-        <div>
-          <label className="block mb-1 text-sm">Test Type</label>
-          <select
-            className="w-full p-2 rounded bg-admin-panel text-foreground border border-admin-border"
-            value={paperData.testType}
-            onChange={(e) =>
-              setPaperData({ ...paperData, testType: e.target.value })
-            }
-          >
-            <option value="">Select Test Type</option>
-            <option value="Unit Test">Unit Test</option>
-            <option value="Mid Term">Mid Term</option>
-            <option value="Final">Final</option>
-          </select>
-        </div>
+          <div>
+            <label className="block text-sm text-muted-foreground mb-1">Instructions</label>
+            <textarea
+              className="w-full bg-admin-panel border border-admin-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              rows={3}
+              value={paperData.Instruction}
+              onChange={(e) =>
+                setPaperData({ ...paperData, Instruction: e.target.value })
+              }
+            />
+          </div>
 
-        {/* Buttons */}
-        <div className="md:col-span-2 flex gap-3 mt-2">
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-4 py-2 rounded font-semibold bg-primary text-foreground hover:bg-green-600 transition-colors"
-          >
-            {loading ? "Generating..." : "Generate Paper"}
-          </button>
-          <button
-            type="button"
-            className="px-4 py-2 rounded font-semibold bg-admin-hover text-foreground hover:bg-admin-border transition-colors"
-            onClick={handleDownload}
-          >
-            Download PDF
-          </button>
-        </div>
-      </form>
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-primary text-white py-3 rounded-lg font-semibold shadow 
+                      hover:bg-green-600 transition disabled:opacity-40"
+            >
+              {loading ? "Generating..." : "Generate Paper"}
+            </button>
+            <button
+              type="button"
+              className="w-full bg-primary text-white py-3 rounded-lg font-semibold shadow 
+                      hover:bg-green-600 transition"
+              onClick={handleDownload}
+            >
+              Download PDF
+            </button>
+          </div>
+        </form>
+      </section>
     </div>
 );
 

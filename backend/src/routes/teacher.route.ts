@@ -1,6 +1,7 @@
 import { Router } from "express"
 import { verifyJwt } from "../middlewares/auth.middleware.js";
 import { downloadPaperPDF, downloadQuestionPDF, fetchClassAnalytics, fetchPapers, fetchQuestions, fetchStudentSubmissions, fetchTeacherSchool, generatepaperAI, generateQuestionAI, getTeacherChapters, getTeacherGrade, getTeacherQuota, getTeacherSchoolGrades, getTeacherSubjects, getTeacherSubtopics, getTeacherTopics, publishedQuestions, publishPaper } from "../controllers/teacher.controller.js";
+import { teacherGiveFeedback } from "../controllers/student.controller.js";
 
 const router = Router();
 
@@ -32,5 +33,8 @@ router.get("/paper/download/:paperId", verifyJwt, downloadPaperPDF);
 router.put("/paper/publish/:paperId", verifyJwt, publishPaper);
 router.get("/papers", verifyJwt, fetchPapers);
 router.get("/paper/:paperId", verifyJwt, fetchPapers);
+
+// Teacher -> give feedback to a student
+router.post("/student/:studentId/feedback", verifyJwt, teacherGiveFeedback);
 
 export default router

@@ -8,6 +8,7 @@ import { Paper } from "../models/paper.model.js";
 import { Attempt } from "../models/attempt.model.js";
 import { Question } from "../models/question.model.js";
 import { Subject } from "../models/subject.model.js";
+import { genAI } from "../lib/ai.js";
 
 export const studentCreatedBySchool = async(req: RequestWithUser, res: Response)=>{
     try {
@@ -650,3 +651,149 @@ export const viewPaperResult = async (req: RequestWithUser, res: Response) => {
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
+
+export const fetchStudentProfile = async (req: RequestWithUser, res: Response) => {
+    try {
+        const studentId = req.user?._id;
+        if (!studentId) return res.status(401).json({ success: false, message: "Unauthorized" });
+
+        const student = await Student.findById(studentId).populate('gradeId', 'gradeName').lean();
+        if (!student) return res.status(404).json({ success: false, message: 'Student not found' });
+
+        // feedbacks may contain AI insights; send as-is
+        return res.status(200).json({ success: true, student });
+    } catch (error) {
+        console.error('Error fetching student profile:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}
+
+export const teacherGiveFeedback = async (req: RequestWithUser, res: Response) => {
+    try {
+        const teacherId = req.user?._id;
+        const { studentId } = req.params;
+        const { feedback } = req.body;
+
+        if (!teacherId) return res.status(401).json({ success: false, message: "Unauthorized" });
+        if (!studentId || !feedback) return res.status(400).json({ success: false, message: "studentId and feedback are required" });
+
+        const teacher = await Teacher.findById(teacherId);
+        if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
+
+        const student = await Student.findById(studentId);
+        if (!student) return res.status(404).json({ success: false, message: "Student not found" });
+
+        // Permission: only the teacher who created/owns the student may give feedback (admins allowed)
+        const teacherOwnsStudent = student.teacherId && student.teacherId.toString() === teacher._id.toString();
+        const isAdmin = (req.user as any)?.role === 'admin';
+        if (!teacherOwnsStudent && !isAdmin) {
+            return res.status(403).json({ success: false, message: "You are not allowed to give feedback for this student" });
+        }
+
+        // Aggregate recent attempts for richer AI prompt and fetch latest attempt explicitly
+        const recentAttempts = await Attempt.find({ studentId }).sort({ createdAt: -1 }).limit(8).populate("subjectId", "subjectName");
+        const latestAttempt = recentAttempts[0] || null;
+
+        const attemptsSummary = recentAttempts.map(a => ({
+            subject: (a.subjectId as any)?.subjectName || "Unknown",
+            percentage: a.percentage,
+            date: a.createdAt
+        }));
+
+        // Build AI prompt including latest attempt score prominently
+        const latestSummaryText = latestAttempt ? `Latest attempt: subject=${(latestAttempt.subjectId as any)?.subjectName || 'Unknown'}, score=${latestAttempt.percentage}` : 'No recent attempts';
+
+        const prompt = `Teacher feedback: ${feedback}\n\n${latestSummaryText}\n\nStudent recent attempts: ${JSON.stringify(attemptsSummary)}\n\nPlease provide a concise JSON with: overallRating (1-5), strengths (array), weaknesses (array), suggestions (array of actionable items). Return ONLY JSON.`;
+
+        let aiInsights = null;
+        try {
+            const result = await genAI.models.generateContent({
+                model: "gemini-2.0-flash",
+                contents: [{ parts: [{ text: prompt }] }]
+            });
+
+            let text = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            text = text.replace(/```json|```/g, "").trim();
+
+            try {
+                aiInsights = JSON.parse(text);
+            } catch (e) {
+                // fallback to heuristic below
+                aiInsights = null;
+            }
+        } catch (err) {
+            console.error("AI feedback generation error:", err);
+            aiInsights = null;
+        }
+
+        // Fallback heuristic if AI failed
+        if (!aiInsights) {
+            const avg = attemptsSummary.length ? (attemptsSummary.reduce((s, it) => s + (it.percentage || 0), 0) / attemptsSummary.length) : null;
+            const overallRating = avg !== null ? Math.max(1, Math.min(5, Math.round((avg / 100) * 5))) : 3;
+
+            const strengths: string[] = [];
+            const weaknesses: string[] = [];
+            const suggestions: string[] = [];
+
+            if (avg !== null) {
+                if (avg >= 75) strengths.push("Consistent performance in recent attempts");
+                if (avg >= 50 && avg < 75) strengths.push("Moderate understanding; reinforce key topics");
+                if (avg < 50) weaknesses.push("Struggles across recent attempts; needs remedial work");
+            } else {
+                suggestions.push("No attempt data available — recommend diagnostic test and observations.");
+            }
+
+            if (attemptsSummary.length > 0) {
+                const subjMap: any = {};
+                attemptsSummary.forEach((it: any) => {
+                    subjMap[it.subject] = subjMap[it.subject] || { total: 0, count: 0 };
+                    subjMap[it.subject].total += it.percentage || 0;
+                    subjMap[it.subject].count += 1;
+                });
+
+                const subjAvg = Object.keys(subjMap).map(k => ({ subject: k, avg: subjMap[k].total / subjMap[k].count }));
+                subjAvg.sort((a, b) => a.avg - b.avg);
+                if (subjAvg.length) {
+                    weaknesses.push(`Needs improvement in ${subjAvg[0].subject}`);
+                    strengths.push(`Relatively stronger in ${subjAvg[subjAvg.length - 1].subject}`);
+                }
+            }
+
+            if (weaknesses.length === 0) weaknesses.push("Identify weaker topics via short quizzes");
+            suggestions.push("Schedule short focused practice sessions on weak topics");
+            suggestions.push("Assign targeted reading and 1:1 review with teacher");
+
+            aiInsights = { overallRating, strengths, weaknesses, suggestions };
+        }
+
+        // Save feedback on student — push into existing Mongoose DocumentArray when possible,
+        // otherwise assign via a safe any-cast to avoid TS mismatches between `DocumentArray` and `[]`.
+        const feedbackRecord = {
+            teacherId: teacher._id,
+            teacherName: teacher.name,
+            feedbackText: feedback,
+            aiInsights,
+            latestAttempt: latestAttempt ? {
+                percentage: latestAttempt.percentage,
+                subject: (latestAttempt.subjectId as any)?.subjectName || null,
+                createdAt: latestAttempt.createdAt
+            } : null,
+            createdAt: new Date()
+        } as any;
+
+        if (Array.isArray((student as any).feedbacks)) {
+            (student as any).feedbacks.push(feedbackRecord);
+        } else {
+            // assign with any-cast so TypeScript/Mongoose types don't conflict
+            (student as any).feedbacks = [feedbackRecord];
+        }
+
+        await student.save();
+
+        return res.status(200).json({ success: true, message: "Feedback saved", feedback: feedbackRecord });
+
+    } catch (error) {
+        console.error("Error saving teacher feedback:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}

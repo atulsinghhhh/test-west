@@ -32,8 +32,12 @@ const BatchAttempt = () => {
             if (response.data.success) {
                 setQuestions(response.data.questions);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error fetching questions", error);
+            if (error.response && (error.response.status === 403 || error.response.status === 400)) {
+                alert(error.response.data.message || "You have already attempted this practice set.");
+                navigate('/student/practice'); // Redirect back to practice list
+            }
         } finally {
             setLoading(false);
         }

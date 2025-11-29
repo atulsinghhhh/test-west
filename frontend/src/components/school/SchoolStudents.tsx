@@ -25,7 +25,7 @@ const SchoolStudents = () => {
     useEffect(() => {
         const fetchStudents = async () => {
             try {
-                const response = await axios.get(`${baseurl}/student/student/`, {
+                const response = await axios.get(`${baseurl}/student/`, {
                     withCredentials: true
                 });
                 if (response.data.success) {
