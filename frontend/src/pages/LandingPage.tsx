@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, CheckCircle, BarChart2, BookOpen, Users } from "lucide-react";
+import { ArrowRight, CheckCircle, BarChart2, BookOpen, Users, GraduationCap } from "lucide-react";
 
 const LandingPage = () => {
     const navigate = useNavigate();
@@ -42,6 +42,12 @@ const LandingPage = () => {
                             className="px-8 py-4 bg-primary text-white rounded-xl text-lg font-semibold hover:bg-green-600 transition-all flex items-center gap-2"
                         >
                             Start Now <ArrowRight size={20} />
+                        </button>
+                        <button 
+                            onClick={() => navigate("/standalone-signup")}
+                            className="px-8 py-4 bg-gray-800 text-white rounded-xl text-lg font-semibold hover:bg-gray-700 transition-all flex items-center gap-2 border border-gray-700"
+                        >
+                            Independent Student? <GraduationCap size={20} />
                         </button>
                     </div>
                 </div>

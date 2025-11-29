@@ -6,6 +6,7 @@ import { School } from "../models/School.model.js";
 import { Teacher } from "../models/teacher.model.js";
 import { ensureTeacherGradeFields } from "../lib/teacherGrade.js";
 import { Student } from "../models/student.model.js";
+import { StandaloneStudent } from "../models/standaloneStudent.model.js";
 
 export interface IUserPayload {
     _id: string;
@@ -54,7 +55,7 @@ export const userLogin = async (req: Request, res: Response) => {
         }
 
         let user: any = null;
-        let role: "admin" | "school" | "teacher" | "student" | null = null;
+        let role: "admin" | "school" | "teacher" | "student" | "standalone" | null = null;
 
         user = await User.findOne({ email });
         if (user) { // check for admin
@@ -78,6 +79,12 @@ export const userLogin = async (req: Request, res: Response) => {
             user = await Student.findOne({ email });
             if(user){
                 role = 'student'
+            }
+        }
+        if(!user){
+            user = await StandaloneStudent.findOne({ email });
+            if(user){
+                role = 'standalone'
             }
         }
 
@@ -158,6 +165,10 @@ export const getProfile = async (req: RequestWithUser, res: Response) => {
 
         if(role === "student") {
             profile = await Student.findById(userId).select("-password");
+        }
+
+        if(role === "standalone") {
+            profile = await StandaloneStudent.findById(userId).select("-password");
         }
 
         if (!profile) {

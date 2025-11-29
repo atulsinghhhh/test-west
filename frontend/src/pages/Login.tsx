@@ -51,6 +51,7 @@ function Login() {
                 if (res.data.user.role === "school") navigate("/school");
                 if (res.data.user.role === "teacher") navigate("/teacher");
                 if (res.data.user.role === "student") navigate("/student/dashboard");
+                if(res.data.user.role === "standalone") navigate("/standalone")
 
             }
         } catch (err: any) {

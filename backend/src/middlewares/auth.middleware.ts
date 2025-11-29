@@ -10,7 +10,7 @@ interface JwtDecoded {
     id: string;
     iat: number;
     exp: number;
-    role: "admin" | "school" | "teacher" | "student";
+    role: "admin" | "school" | "teacher" | "student" | "standalone";
 }
 
 export const verifyJwt = async (req: RequestWithUser, res: Response, next: NextFunction) => {
@@ -42,6 +42,13 @@ export const verifyJwt = async (req: RequestWithUser, res: Response, next: NextF
 
         if(role === "student") {
             user = await Student.findById(id).select("-password");
+        }
+
+        if(role === "standalone") {
+            // Import dynamically to avoid circular dependency if any, or just import at top if safe
+            // Assuming StandaloneStudent is imported at top
+            const { StandaloneStudent } = await import("../models/standaloneStudent.model.js");
+            user = await StandaloneStudent.findById(id).select("-password");
         }
 
         if (!user) {

@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 
 interface Props{
     children: React.ReactElement;
-    allowedRoles?: Array<"admin" | "school" | "teacher" | "student">;
+    allowedRoles?: Array<"admin" | "school" | "teacher" | "student" | "standalone">;
 }
 
 export const ProtectedRoute = ({children, allowedRoles}: Props) => {

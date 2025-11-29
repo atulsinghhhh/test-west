@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom"
 import Signup from "./pages/Signup"
+import StandaloneSignup from "./pages/StandaloneSignup"
 import Login from "./pages/Login"
 import { ProtectedRoute } from "./components/ProtectRoute"
 // import SchoolForm from "./pages/SchoolForm"
@@ -42,6 +43,15 @@ import TeacherAnalytics from "./components/teacher/TeacherAnalytics"
 import TeacherStudents from "./components/teacher/TeacherStudents"
 import TeacherStudentForm from "./components/teacher/TeacherStudentForm"
 
+// Standalone Components
+import StandaloneStudentLayout from "./components/standalone/StandaloneStudentLayout"
+import StandaloneDashboard from "./components/standalone/StandaloneDashboard"
+import StandalonePapers from "./components/standalone/StandalonePapers"
+import StandaloneQuizzes from "./components/standalone/StandaloneQuizzes"
+import StandaloneQuestions from "./components/standalone/StandaloneQuestions"
+import StandalonePaperAttempt from "./components/standalone/StandalonePaperAttempt"
+import StandaloneBatchAttempt from "./components/standalone/StandaloneBatchAttempt"
+
 
 function App() {
   return (
@@ -50,6 +60,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/standalone-signup" element={<StandaloneSignup />} />
           <Route path="/login" element={<Login />} />
           
           {/* Admin Routes */}
@@ -114,6 +125,22 @@ function App() {
             <Route path="practice/result/:batchId" element={<BatchResult />} />
             <Route path="paper/result/:paperId" element={<PaperResult />} />
           </Route>
+
+          {/* Standalone Student Routes */}
+          <Route path="/standalone" element={
+            <ProtectedRoute allowedRoles={['standalone']}>
+              <StandaloneStudentLayout />
+            </ProtectedRoute>
+          }>
+            <Route path="dashboard" element={<StandaloneDashboard />} />
+            <Route path="papers" element={<StandalonePapers />} />
+            <Route path="paper/:paperId" element={<StandalonePaperAttempt />} />
+            <Route path="quizzes" element={<StandaloneQuizzes />} />
+            <Route path="practice/:batchId" element={<StandaloneBatchAttempt />} />
+            <Route path="questions" element={<StandaloneQuestions />} />
+          </Route>
+
+          {/* Catch all route */}
 
         </Routes>
       </div>
