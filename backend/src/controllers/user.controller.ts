@@ -116,7 +116,7 @@ export const userLogin = async (req: Request, res: Response) => {
         return res.status(200).json({ success: true, message: "Login successful", user:{
             ...user.toObject ? user.toObject() : user,
             role: role
-        } });
+        }, token: token });
     } catch (error) {
         console.error("Login error:", error);
         return res.status(500).json({ success: false, message: "Internal server error" });

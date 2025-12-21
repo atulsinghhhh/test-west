@@ -12,9 +12,10 @@ import StandaloneStudentRoutes from "./routes/standaloneStudent.route.js"
 const app = express();
 
 // middleware 
+const allowedOrigin = (process.env.Frontend_URL || 'http://localhost:5173').replace(/\/+$/, '');
 app.use(cors(
     {
-        origin: (process.env.Frontend_URL || 'http://localhost:5173').replace(/\/+$/, ''),
+        origin: allowedOrigin,
         credentials: true,
     }
 ));

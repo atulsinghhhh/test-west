@@ -15,7 +15,16 @@ interface JwtDecoded {
 
 export const verifyJwt = async (req: RequestWithUser, res: Response, next: NextFunction) => {
     try {
-        const token = req.cookies?.token;
+        // Try to get token from cookies first (for local/same-origin), then from Authorization header
+        let token = req.cookies?.token;
+        
+        if (!token) {
+            const authHeader = req.headers.authorization;
+            if (authHeader?.startsWith('Bearer ')) {
+                token = authHeader.slice(7); // Remove 'Bearer ' prefix
+            }
+        }
+        
         if (!token) {
             return res.status(401).json({ success: false, message: "No token provided" });
         }
