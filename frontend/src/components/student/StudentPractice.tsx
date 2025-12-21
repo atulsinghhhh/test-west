@@ -29,8 +29,6 @@ const StudentPractice = () => {
             }
         } catch (error) {
             console.error("Error fetching subjects:", error);
-        } finally {
-            setLoading(false);
         }
     };
 

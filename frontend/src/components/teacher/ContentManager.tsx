@@ -96,7 +96,7 @@ const ContentManager = () => {
                                 </span>
                             </div>
                             <button
-                                onClick={() => handlePublish(batch.batchId, 'question', batch.isPublish)}
+                                onClick={() => handlePublish(batch.batchId, 'question')}
                                 disabled={publishing === batch.batchId}
                                 className={`px-4 py-2 rounded-md font-medium transition-colors ${
                                     batch.isPublish 
@@ -130,7 +130,7 @@ const ContentManager = () => {
                                 </span>
                             </div>
                             <button
-                                onClick={() => handlePublish(paper.paperId, 'paper', paper.publishStatus)}
+                                onClick={() => handlePublish(paper.paperId, 'paper')}
                                 disabled={publishing === paper.paperId}
                                 className={`px-4 py-2 rounded-md font-medium transition-colors ${
                                     paper.publishStatus 

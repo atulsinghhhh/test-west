@@ -20,12 +20,10 @@ const SchoolForm = () => {
   const [grades,setGrades] = useState<Grade[]>([]);
   const [message,setMessage] = useState<string>("");
   const [error,setError] = useState<string>("");
-  const [grade,setGrade] = useState(false);
   const [loading,setLoading] = useState(false);
 
   useEffect(()=>{
     const fetchGrade = async()=>{
-      setGrade(true);
       try {
         const response = await axios.get(`${baseurl}/school/grade`,{
           withCredentials: true
@@ -33,8 +31,6 @@ const SchoolForm = () => {
         setGrades(response.data.grades);
       } catch (error) {
         setError("failed to fetch the grade");
-      } finally {
-        setGrade(false);
       }
     }
     fetchGrade();

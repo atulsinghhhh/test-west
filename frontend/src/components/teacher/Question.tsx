@@ -32,14 +32,7 @@ interface GradeInfo {
     paperUsed: number;
 }
 
-interface GeneratedQuestion {
-    _id: string;
-    questiontext: string;
-    questionType: string;
-    difficulty: string;
-    options: string[];
-    correctAnswer?: string;
-}
+// Removed unused GeneratedQuestion interface
 
 const questionTypes = [
     { value: "mcq", label: "Multiple Choice" },
@@ -211,7 +204,6 @@ export default function Question() {
                 { withCredentials: true }
             );
 
-            setGeneratedQuestions(response.data.questions || []);
             setMessage(response.data.message || "Questions generated");
             setBatchId(response.data.batchId);
 

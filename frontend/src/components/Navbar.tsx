@@ -1,13 +1,12 @@
 import axios from "axios";
 import { useAuth } from "../context/AuthProvider";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 import { Moon, Sun, LogOut } from "lucide-react";
 
 function Navbar() {
     const { baseurl, user, setUser, setIsLoggedIn } = useAuth();
     const navigate = useNavigate();
-    const location = useLocation();
     const { theme, setTheme } = useTheme();
 
     const handleLogout = async () => {
