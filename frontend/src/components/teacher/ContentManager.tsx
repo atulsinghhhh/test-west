@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../context/AuthProvider";
-import { CheckCircle, XCircle, FileText, BookOpen, Loader2 } from "lucide-react";
+import { FileText, BookOpen, Loader2 } from "lucide-react";
 
 interface Batch {
     _id: string;
@@ -53,7 +53,7 @@ const ContentManager = () => {
         fetchData();
     }, []);
 
-    const handlePublish = async (id: string, type: 'question' | 'paper', currentStatus: boolean) => {
+    const handlePublish = async (id: string, type: 'question' | 'paper') => {
         setPublishing(id);
         try {
             const endpoint = type === 'question' 

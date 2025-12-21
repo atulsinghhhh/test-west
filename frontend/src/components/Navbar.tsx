@@ -2,7 +2,7 @@ import axios from "axios";
 import { useAuth } from "../context/AuthProvider";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
-import { Moon, Sun, Plus, LogOut, LayoutDashboard, Upload } from "lucide-react";
+import { Moon, Sun, LogOut } from "lucide-react";
 
 function Navbar() {
     const { baseurl, user, setUser, setIsLoggedIn } = useAuth();
@@ -24,8 +24,6 @@ function Navbar() {
             console.log("Failed to logout", error);
         }
     };
-
-    const isPublicPage = ["/", "/login", "/signup"].includes(location.pathname);
 
     return (
         <nav className="w-full bg-admin-panel/80 backdrop-blur-md text-foreground py-4 sticky top-0 z-50 border-b border-admin-border transition-colors duration-300">

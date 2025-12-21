@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, ArrowRight, Save } from 'lucide-react';
 import axios from 'axios';
@@ -8,7 +8,7 @@ const PracticeSession = () => {
     const { baseurl } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
-    const { questions, batchId } = location.state || {};
+    const { questions } = location.state || {};
 
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<any>({}); // { questionId: userAnswer }

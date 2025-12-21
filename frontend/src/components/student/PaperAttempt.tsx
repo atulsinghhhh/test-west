@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Clock, CheckCircle, AlertCircle, ChevronRight, ChevronLeft, Save } from 'lucide-react';
+import { Clock, CheckCircle, ChevronRight, ChevronLeft, Save } from 'lucide-react';
 import { useAuth } from '../../context/AuthProvider';
 
 interface Question {

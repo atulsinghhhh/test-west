@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { BookOpen, ArrowRight, Brain, CheckCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowRight, Brain, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthProvider';
@@ -9,7 +9,6 @@ const StudentPractice = () => {
     const navigate = useNavigate();
     const [subjects, setSubjects] = useState<any[]>([]);
     const [selectedSubject, setSelectedSubject] = useState('');
-    const [loading, setLoading] = useState(true);
     const [starting, setStarting] = useState(false);
 
     useEffect(() => {

@@ -18,10 +18,10 @@ const SchoolForm = () => {
     gradeId: ''
   });
   const [grades,setGrades] = useState<Grade[]>([]);
-  const [loading,setLoading] = useState(false);
   const [message,setMessage] = useState<string>("");
   const [error,setError] = useState<string>("");
   const [grade,setGrade] = useState(false);
+  const [loading,setLoading] = useState(false);
 
   useEffect(()=>{
     const fetchGrade = async()=>{

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FileText, BookOpen, LogOut, Menu, X, User, Target } from 'lucide-react';
+import { LayoutDashboard, FileText, BookOpen, LogOut, Menu, X, Target } from 'lucide-react';
 import { useAuth } from '../../context/AuthProvider';
 import axios from 'axios';
 

@@ -16,7 +16,7 @@ const TeacherLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const navigate = useNavigate();
     const location = useLocation();
-    const { baseurl, user, setUser, setIsLoggedIn } = useAuth();
+    const { baseurl, setUser, setIsLoggedIn } = useAuth();
 
     const handleLogout = async () => {
         try {

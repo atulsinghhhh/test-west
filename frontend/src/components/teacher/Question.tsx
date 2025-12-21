@@ -73,7 +73,6 @@ export default function Question() {
     const [noofQuestions, setNoofQuestions] = useState(5);
     const [filterBy, setFilterBy] = useState("subject");
 
-    const [generatedQuestions, setGeneratedQuestions] = useState<GeneratedQuestion[]>([]);
     const [batchId, setBatchId ] = useState();
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
