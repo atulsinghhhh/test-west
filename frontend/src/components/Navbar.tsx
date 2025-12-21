@@ -18,6 +18,8 @@ function Navbar() {
             );
             setIsLoggedIn(false);
             setUser(null);
+            localStorage.removeItem("user");
+            localStorage.removeItem("token");
             navigate("/login");
         } catch (error) {
             console.log("Failed to logout", error);

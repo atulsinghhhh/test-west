@@ -40,10 +40,14 @@ function Login() {
 
             if (data.success) {
                 const user = data.user;
+                const token = data.token;
                 setUser(user);
                 setRole(user.role);
                 setIsLoggedIn(true);
                 localStorage.setItem("user", JSON.stringify(user));
+                if (token) {
+                    localStorage.setItem("token", token);
+                }
 
                 setMessage("Login successful!");
 

@@ -1,6 +1,18 @@
 import axios from 'axios'
 import { createContext, useContext, useEffect, useState } from 'react';
 
+// Setup axios interceptor to attach token to all requests
+axios.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem("token");
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
 export interface IUser {
     _id: string
     name: string
@@ -50,8 +62,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         const fetchUser = async () => {
             try {
+                const token = localStorage.getItem("token");
                 const response = await axios.get(`${baseurl}/auth/me`, {
-                    withCredentials: true
+                    withCredentials: true,
+                    headers: token ? { Authorization: `Bearer ${token}` } : {}
                 });
 
                 const payload = response.data?.profile || response.data?.user;
