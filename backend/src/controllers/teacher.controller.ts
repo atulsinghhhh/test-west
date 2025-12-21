@@ -998,7 +998,9 @@ export const fetchClassAnalytics = async (req: RequestWithUser, res: Response) =
 
         // Generate AI insights if there's data
         let aiInsights = null;
+        let aiInsightsSource: "ai" | "heuristic" | "none" = "none";
         if (analytics[0] && analytics[0].totalAttempts > 0) {
+            aiInsightsSource = "ai";
             const analyticsData = analytics[0];
             const classAvgScore = analyticsData.avgScore || 0;
 
@@ -1040,7 +1042,7 @@ Format the response as JSON with these keys:
 
             try {
                 const result = await genAI.models.generateContent({
-                    model: "gemini-1.5-flash",
+                    model: "gemini-2.0-flash",
                     contents: [{ parts: [{ text: analyticsPrompt }] }],
                 });
                 let aiResponse = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
@@ -1058,7 +1060,14 @@ Format the response as JSON with these keys:
                     console.warn("[AI] No JSON object detected in response; falling back to heuristic insights.");
                 }
             } catch (aiError) {
-                console.error("AI insights generation error:", aiError);
+                const statusCode = (aiError as any)?.status || (aiError as any)?.response?.status;
+                const apiStatus = (aiError as any)?.error?.status;
+                if (statusCode === 429 || apiStatus === "RESOURCE_EXHAUSTED") {
+                    console.warn("AI insights skipped due to quota limit; falling back to heuristics.");
+                } else {
+                    console.error("AI insights generation error:", aiError);
+                }
+                aiInsightsSource = "heuristic";
                 // Continue without AI insights if there's an error
             }
 
@@ -1095,7 +1104,10 @@ Format the response as JSON with these keys:
                     practiceHabits: practiceAnalytics.length ? "Students are engaging in practice; encourage spaced repetition." : "Low practice activity; schedule structured practice sessions.",
                     suggestions
                 };
+                aiInsightsSource = "heuristic";
             }
+        } else {
+            aiInsightsSource = "none";
         }
 
         return res.status(200).json({ 
@@ -1111,7 +1123,8 @@ Format the response as JSON with these keys:
             subjectAnalytics,
             studentPerformance,
             practiceAnalytics,
-            aiInsights
+            aiInsights,
+            aiInsightsSource
         });
     } catch (error) {
         console.log("Error fetching class analytics:", error);
